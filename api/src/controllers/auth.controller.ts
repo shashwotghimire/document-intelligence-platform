@@ -24,7 +24,7 @@ export const registerUser = asyncHandler(
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
     const userCount = await User.count();
     const hashedPassword = await hashPassword(password);
-    const verificationUrl = `http://localhost:8080/api/auth/verify?token=${emailVerificationToken}`;
+    const verificationUrl = `http://localhost:5173/verify-email?token=${emailVerificationToken}`;
 
     const user = await User.create({
       name,
