@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-
+import pgvector from "pgvector/sequelize";
 export const sequelize = new Sequelize(
   process.env.PGDATABASE as string,
   process.env.PGUSER as string,
@@ -10,13 +10,14 @@ export const sequelize = new Sequelize(
     ssl: process.env.PGSSLMODE === "require",
   },
 );
-
+pgvector.registerType(Sequelize);
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("Database connected ");
     await import("./models/user.model.js");
     await import("./models/document.model.js");
+    await import("./models/documentChunk.model.js");
     await import("./models/associations.js");
     await sequelize.sync();
     console.log("Database synced");

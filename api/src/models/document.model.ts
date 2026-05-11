@@ -10,6 +10,7 @@ import sequelize from "../db";
 import { User } from "./user.model";
 
 export type DocumentFileType = "pdf" | "docx" | "txt";
+export type fileProcessedType = "Processing" | "Processed" | "Failed";
 
 export class Document extends Model<
   InferAttributes<Document>,
@@ -20,6 +21,7 @@ export class Document extends Model<
   declare fileType: DocumentFileType;
   declare filePath: string;
   declare fileSize: number;
+  declare fileProcessingStatus: fileProcessedType;
   declare uploadedBy: ForeignKey<User["id"]>;
 }
 
@@ -45,6 +47,9 @@ Document.init(
     fileSize: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    fileProcessingStatus: {
+      type: DataTypes.ENUM("Processing", "Processed", "Failed"),
     },
     uploadedBy: {
       type: DataTypes.UUID,
