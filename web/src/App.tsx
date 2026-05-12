@@ -3,6 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoutes from "@/components/ProtectedRoutes";
 import PublicRoute from "@/components/PublicRoute";
 import Admin from "@/pages/Admin";
+import AdminDashboard from "@/pages/AdminDashboard";
+import AdminSettings from "@/pages/AdminSettings";
+import AdminUsers from "@/pages/AdminUsers";
 import Chat from "@/pages/Chat";
 import EmailVerify from "@/pages/EmailVerify";
 import Landing from "@/pages/Landing";
@@ -22,7 +25,12 @@ function App() {
         <Route path="/chat" element={<Chat />} />
       </Route>
       <Route element={<ProtectedRoutes allowedRoles={["admin"]} />}>
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin" element={<Admin />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

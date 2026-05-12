@@ -59,8 +59,8 @@ export const uploadFile = asyncHandler<AuthRequest>(
         message: "file uploaded successfully",
         data: {
           file,
-          chunks,
-          chunksWithEmbeddings,
+          // chunks,
+          // chunksWithEmbeddings,
         },
       });
     } catch (error) {
