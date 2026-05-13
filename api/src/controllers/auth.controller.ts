@@ -42,11 +42,15 @@ export const registerUser = asyncHandler(
       <a href="${verificationUrl}">Verify Email</a>
        `,
     );
-    res.status(201).json({
-      success: true,
-      message:
-        "User registered. Verification code has been sent to your registered email, please verify your account",
-    });
+    res
+      .status(201)
+      .json(
+        new ApiResponse(
+          true,
+          "User registered. Verification code has been sent to your registered email, please verify your account",
+          null,
+        ),
+      );
   },
 );
 

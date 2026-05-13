@@ -9,6 +9,8 @@ import { extractText } from "../services/textExtractor.service";
 import { chunkDocument } from "../services/chunk.service";
 import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
+import { ApiResponse } from "../utils/ApiResponse";
+
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
 
@@ -54,15 +56,13 @@ export const uploadFile = asyncHandler<AuthRequest>(
       await DocumentChunk.bulkCreate(chunksWithEmbeddings);
       file.fileProcessingStatus = "Processed";
       await file.save();
-      return res.status(200).json({
-        success: true,
-        message: "file uploaded successfully",
-        data: {
+      return res.status(200).json(
+        new ApiResponse(true, "file uploaded successfully", {
           file,
           // chunks,
           // chunksWithEmbeddings,
-        },
-      });
+        }),
+      );
     } catch (error) {
       await fs.unlink(filePath).catch(() => undefined);
       throw error;
