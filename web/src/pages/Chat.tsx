@@ -6,7 +6,6 @@ import { NavLink } from "react-router-dom";
 
 function Chat() {
   const { data } = useMe();
-
   if (!data) {
     return null;
   }

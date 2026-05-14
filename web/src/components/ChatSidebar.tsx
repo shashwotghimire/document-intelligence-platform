@@ -12,12 +12,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Plus } from "lucide-react";
 import { LogoDark } from "./Logo";
-
-const conversations = [
-  {
-    title: "Current chat",
-  },
-];
+import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
+import Loading from "./Loading";
 
 interface ChatSidebarProps {
   name: string;
@@ -25,6 +21,18 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar(data: ChatSidebarProps) {
+  const { data: chatData, isPending, error } = useGetAllChats();
+  const {
+    mutate,
+    isPending: createIsPending,
+    isError: createIsError,
+  } = useCreateChat();
+  if (isPending) {
+    return <Loading />;
+  }
+  const handleCreateChat = () => {
+    mutate();
+  };
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border pb-4">
@@ -41,7 +49,7 @@ export function ChatSidebar(data: ChatSidebarProps) {
                   className="cursor-pointer text-base hover:bg-ink hover:text-cream hover:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
                 >
                   <Plus />
-                  <span>New chat</span>
+                  <span onClick={handleCreateChat}>New chat</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -52,8 +60,8 @@ export function ChatSidebar(data: ChatSidebarProps) {
           <SidebarGroupLabel className="text-sm">Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-1 gap-2">
-              {conversations.map((conversation) => (
-                <SidebarMenuItem key={conversation.title}>
+              {chatData.chats.map((conversation) => (
+                <SidebarMenuItem key={conversation.id}>
                   <SidebarMenuButton
                     isActive
                     size="lg"
