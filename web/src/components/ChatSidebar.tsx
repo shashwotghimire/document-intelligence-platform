@@ -21,11 +21,11 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar(data: ChatSidebarProps) {
-  const { data: chatData, isPending, error } = useGetAllChats();
+  const { data: chatData, isPending } = useGetAllChats();
   const {
     mutate,
     isPending: createIsPending,
-    isError: createIsError,
+    // isError: createIsError,
   } = useCreateChat();
   if (isPending) {
     return <Loading />;
@@ -49,7 +49,9 @@ export function ChatSidebar(data: ChatSidebarProps) {
                   className="cursor-pointer text-base hover:bg-ink hover:text-cream hover:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
                 >
                   <Plus />
-                  <span onClick={handleCreateChat}>New chat</span>
+                  <span onClick={handleCreateChat}>
+                    {createIsPending ? "Creating..." : "New chat "}
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -57,7 +59,9 @@ export function ChatSidebar(data: ChatSidebarProps) {
         </SidebarGroup>
 
         <SidebarGroup className="mt-1">
-          <SidebarGroupLabel className="text-sm">Chats</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-md mb-2 ">
+            Recents
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-1 gap-2">
               {chatData.chats.map((conversation) => (

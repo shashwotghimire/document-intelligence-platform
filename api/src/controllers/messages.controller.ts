@@ -66,7 +66,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
     res.status(201).json(
       new ApiResponse(true, "Message sent successfully", {
         userMessage,
-        topMatch: top5 ?? null,
+        // topMatch: top5 ?? null,
         aiMesssage,
       }),
     );

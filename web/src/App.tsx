@@ -22,7 +22,7 @@ function App() {
       </Route>
       <Route path="/verify-email" element={<EmailVerify />} />
       <Route element={<ProtectedRoutes allowedRoles={["admin", "user"]} />}>
-        <Route path="/chat" element={<Chat />} />
+        <Route path="/chat/:chatId?" element={<Chat />} />
       </Route>
       <Route element={<ProtectedRoutes allowedRoles={["admin"]} />}>
         <Route path="/admin" element={<Admin />}>

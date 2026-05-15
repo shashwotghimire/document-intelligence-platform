@@ -66,13 +66,13 @@ export const useGetAllChats = () => {
 
 export const useCreateChat = () => {
   const queryClient = useQueryClient();
-  return useMutation<CreateChatData, Error, CreateChatRequest>({
-    onMutate: async (newChat) => {
-      await queryClient.cancelQueries({ queryKey: ["user", "chats"] });
-    },
+  return useMutation<CreateChatData, Error>({
     mutationFn: async () => {
       const res = (await axiosInstance.post<CreateChatResponse>("/chats")).data;
       return res.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["user", "chats"] });
     },
   });
 };
