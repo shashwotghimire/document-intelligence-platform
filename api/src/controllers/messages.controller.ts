@@ -58,7 +58,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
     if (!aiResponse) {
       throw new ApiError(500, "AI response not found", "Internal server error");
     }
-    const aiMesssage = await Messages.create({
+    const aiMessage = await Messages.create({
       chatId,
       content: aiResponse,
       messageRole: "ai",
@@ -67,7 +67,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
       new ApiResponse(true, "Message sent successfully", {
         userMessage,
         // topMatch: top5 ?? null,
-        aiMesssage,
+        aiMessage,
       }),
     );
   },
@@ -97,7 +97,7 @@ export const getMessages = asyncHandler<AuthRequest>(
       },
       limit,
       offset,
-      order: [["createdAt", "ASC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     res.status(200).json(
