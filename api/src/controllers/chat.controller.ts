@@ -5,6 +5,7 @@ import { AuthRequest } from "../middlewares/auth.middleware";
 import { ApiResponse } from "../utils/ApiResponse";
 import { Op } from "sequelize";
 import { ApiError } from "../utils/ApiError";
+import { User } from "../models/user.model";
 
 export const createChat = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -41,7 +42,7 @@ export const getAllChats = asyncHandler<AuthRequest>(
       where: whereClause,
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
     });
 
     return res.status(200).json(

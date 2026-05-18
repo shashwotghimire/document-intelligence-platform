@@ -5,6 +5,7 @@ import {
   InferAttributes,
   InferCreationAttributes,
   Model,
+  NonAttribute,
 } from "sequelize";
 import { User } from "./user.model";
 import sequelize from "../db";
@@ -15,6 +16,7 @@ export class Chat extends Model<
   declare id: CreationOptional<string>;
   declare title: CreationOptional<string>;
   declare userId: ForeignKey<User["id"]>;
+  declare count: CreationOptional<number>;
 }
 
 Chat.init(
@@ -26,7 +28,7 @@ Chat.init(
     },
     title: {
       type: DataTypes.STRING,
-      defaultValue: "Untitled chat",
+      defaultValue: "Another øne",
       allowNull: false,
     },
     userId: {
@@ -37,6 +39,9 @@ Chat.init(
         key: "id",
       },
       onDelete: "CASCADE",
+    },
+    count: {
+      type: DataTypes.INTEGER,
     },
   },
   {

@@ -14,6 +14,7 @@ import { Plus } from "lucide-react";
 import { LogoDark } from "./Logo";
 import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
 import Loading from "./Loading";
+import { NavLink, useParams } from "react-router-dom";
 
 interface ChatSidebarProps {
   name: string;
@@ -21,6 +22,7 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar(data: ChatSidebarProps) {
+  const { chatId } = useParams<{ chatId: string }>();
   const { data: chatData, isPending } = useGetAllChats();
   const {
     mutate,
@@ -63,15 +65,18 @@ export function ChatSidebar(data: ChatSidebarProps) {
             Recents
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="mt-1 gap-2">
+            <SidebarMenu className="mt-1 gap-1">
               {chatData.chats.map((conversation) => (
                 <SidebarMenuItem key={conversation.id}>
                   <SidebarMenuButton
-                    isActive
+                    isActive={chatId === conversation.id}
                     size="lg"
                     className="cursor-pointer text-sm hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
                   >
-                    <span>{conversation.title}</span>
+                    <NavLink to={`/chat/${conversation.id}`}>
+                      <span>{conversation.title}</span>
+                    </NavLink>
+                    {/* <span>{conversation.title}</span> */}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

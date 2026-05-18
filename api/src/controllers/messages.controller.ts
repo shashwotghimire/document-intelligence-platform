@@ -22,6 +22,16 @@ export const sendMessage = asyncHandler<AuthRequest>(
       chatId,
       messageRole: "user",
     });
+    const chat = await Chat.findOne({
+      where: {
+        id: chatId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!chat) {
+      throw new ApiError(404, "Chat not found", "Invalid chat id");
+    }
     const userQueryEmbedding = await generateEmbedding(userMessage.content);
     const top5 = await sequelize.query(
       `
@@ -63,6 +73,18 @@ export const sendMessage = asyncHandler<AuthRequest>(
       content: aiResponse,
       messageRole: "ai",
     });
+    // await Chat.update(
+    //   {
+    //     updatedAt: new Date(),
+    //   },
+    //   { where: { id: chatId } },
+    // );
+    await Chat.update(
+      { count: chat.count + 1 },
+      {
+        where: { id: chatId },
+      },
+    );
     res.status(201).json(
       new ApiResponse(true, "Message sent successfully", {
         userMessage,
