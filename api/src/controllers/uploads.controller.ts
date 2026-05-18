@@ -10,6 +10,7 @@ import { chunkDocument } from "../services/chunk.service";
 import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
+import { User } from "../models/user.model";
 
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
@@ -67,5 +68,25 @@ export const uploadFile = asyncHandler<AuthRequest>(
       await fs.unlink(filePath).catch(() => undefined);
       throw error;
     }
+  },
+);
+
+export const getFileStats = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const [totalDocuments, totalChunks, totalSize, totalUsers] =
+      await Promise.all([
+        Document.count(),
+        DocumentChunk.count(),
+        Document.sum("fileSize"),
+        User.count(),
+      ]);
+    return res.status(200).json(
+      new ApiResponse(true, "Stats fetched successfully", {
+        totalDocuments,
+        totalChunks,
+        totalSize,
+        totalUsers,
+      }),
+    );
   },
 );

@@ -1,6 +1,7 @@
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useMe } from "@/service/api/auth/auth.api";
+import { useGetAllChats } from "@/service/api/chats/chat.api";
 import { ArrowLeft } from "lucide-react";
 import { NavLink, useParams } from "react-router-dom";
 import ChatInterface from "@/components/ChatInterface";
@@ -8,16 +9,24 @@ import ChatInterface from "@/components/ChatInterface";
 function Chat() {
   const { chatId } = useParams<{ chatId: string }>();
   const { data } = useMe();
+  const { data: chatsData } = useGetAllChats();
+  const chatTitle =
+    chatsData?.chats.find((chat) => chat.id === chatId)?.title ?? "Chat";
+
   if (!data) {
     return null;
   }
-
+  if (!chatId) {
+  }
   return (
     <SidebarProvider>
       <ChatSidebar name={data.data.name} role={data.data.role} />
       <main className="flex flex-1 flex-col p-6">
-        {data.data.role === "admin" && (
-          <div className="flex justify-end border-b p-3 -mx-6 px-6 mb-6 border-sidebar-border">
+        <div className="flex items-center justify-between gap-4 border-b -mx-6 px-6 py-2.5 mb-6 border-sidebar-border">
+          <h1 className="truncate text-base font-semibold text-foreground ">
+            {chatTitle}
+          </h1>
+          {data.data.role === "admin" && (
             <NavLink
               to="/admin"
               className="inline-flex items-center gap-2 whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -25,8 +34,8 @@ function Chat() {
               <ArrowLeft className="size-5" />
               <span>Admin Panel</span>
             </NavLink>
-          </div>
-        )}
+          )}
+        </div>
         <div>
           <ChatInterface chatId={chatId} />
         </div>
