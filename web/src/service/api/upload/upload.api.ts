@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import axiosInstance from "@/service/axios/axios";
 
@@ -26,6 +26,16 @@ export interface DocumentUploadRequest {
   file: File;
 }
 
+export interface DeleteDocumentRequest {
+  documentId: string;
+}
+
+export interface DeleteDocumentResponse {
+  success: boolean;
+  message: string;
+  data: null;
+}
+
 export const useUploadDocument = () =>
   useMutation<DocumentUploadResponse, Error, DocumentUploadRequest>({
     mutationFn: async ({ file }) => {
@@ -45,3 +55,20 @@ export const useUploadDocument = () =>
       return response.data;
     },
   });
+
+export const useDeleteDocument = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteDocumentResponse, Error, DeleteDocumentRequest>({
+    mutationFn: async ({ documentId }) => {
+      const response = await axiosInstance.delete<DeleteDocumentResponse>(
+        `/uploads/${documentId}`,
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+  });
+};

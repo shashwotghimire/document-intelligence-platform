@@ -13,6 +13,16 @@ import type {
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendMail";
 import { Op } from "sequelize";
+import { generateGravatarUrl } from "../services/gravatar.service";
+
+const ensureGravatarUrl = async (user: User) => {
+  if (user.gravatarUrl) return user.gravatarUrl;
+
+  user.gravatarUrl = generateGravatarUrl(user.email);
+  await user.save();
+
+  return user.gravatarUrl;
+};
 
 export const registerUser = asyncHandler(
   async (req: AuthRequest, res: Response) => {
@@ -26,10 +36,11 @@ export const registerUser = asyncHandler(
     const userCount = await User.count();
     const hashedPassword = await hashPassword(password);
     const verificationUrl = `http://localhost:5173/verify-email?token=${emailVerificationToken}`;
-
+    const gravatarUrl = generateGravatarUrl(email);
     const user = await User.create({
       name,
       email,
+      gravatarUrl,
       password: hashedPassword,
       role: userCount === 0 ? "admin" : "user",
       emailVerificationToken,
@@ -83,6 +94,7 @@ export const loginUser = asyncHandler(
     if (!user.isEmailVerified) {
       throw new ApiError(403, "Forbidden", "Please verify your email first");
     }
+    const gravatarUrl = await ensureGravatarUrl(user);
 
     const token = signToken({
       id: user.id,
@@ -102,6 +114,7 @@ export const loginUser = asyncHandler(
           role: user.role,
           isBlocked: user.isBlocked,
           isEmailVerified: user.isEmailVerified,
+          gravatarUrl,
         },
         token,
       }),
@@ -117,6 +130,7 @@ export const getUser = asyncHandler<AuthRequest>(
     if (!user) {
       throw new ApiError(404, "User not found", "Invalid user");
     }
+    const gravatarUrl = await ensureGravatarUrl(user);
 
     res.status(200).json(
       new ApiResponse(true, "User fetched successfully", {
@@ -126,6 +140,7 @@ export const getUser = asyncHandler<AuthRequest>(
         role: user.role,
         isBlocked: user.isBlocked,
         isEmailVerified: user.isEmailVerified,
+        gravatarUrl,
       }),
     );
   },

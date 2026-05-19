@@ -19,11 +19,13 @@ import { NavLink, useParams } from "react-router-dom";
 interface ChatSidebarProps {
   name: string;
   role: string;
+  gravatarUrl?: string;
 }
 
 export function ChatSidebar(data: ChatSidebarProps) {
   const { chatId } = useParams<{ chatId: string }>();
   const { data: chatData, isPending } = useGetAllChats();
+  const chats = chatData?.chats ?? [];
   const {
     mutate,
     isPending: createIsPending,
@@ -66,7 +68,7 @@ export function ChatSidebar(data: ChatSidebarProps) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-1 gap-1">
-              {chatData.chats.map((conversation) => (
+              {chats.map((conversation) => (
                 <SidebarMenuItem key={conversation.id}>
                   <SidebarMenuButton
                     isActive={chatId === conversation.id}
@@ -86,8 +88,19 @@ export function ChatSidebar(data: ChatSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <p>{data.name}</p>
-        <p className="text-neutral-500">{data.role}</p>
+        <div className="flex gap-4">
+          {data.gravatarUrl && (
+            <img
+              alt={`${data.name}'s avatar`}
+              className="size-9 rounded-full mt-2"
+              src={data.gravatarUrl}
+            />
+          )}
+          <div className="flex flex-col ">
+            <p>{data.name}</p>
+            <p className="text-neutral-500">{data.role}</p>
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

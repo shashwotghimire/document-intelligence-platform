@@ -108,3 +108,36 @@ export const getStatsForTable = asyncHandler(
       .json(new ApiResponse(true, "Stats fetched successfully", documents));
   },
 );
+
+export const deleteFile = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const { documentId } = req.params;
+
+    if (!documentId || Array.isArray(documentId)) {
+      throw new ApiError(400, "Bad Request", "Missing document id");
+    }
+
+    const document = await Document.findOne({
+      where: {
+        id: documentId,
+        uploadedBy: req.user.id,
+      },
+    });
+
+    if (!document) {
+      throw new ApiError(404, "Document not found", "Invalid document id");
+    }
+
+    await DocumentChunk.destroy({
+      where: {
+        documentId: document.id,
+      },
+    });
+    await document.destroy();
+    await fs.unlink(document.filePath).catch(() => undefined);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(true, "File deleted successfully", null));
+  },
+);

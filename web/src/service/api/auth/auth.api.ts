@@ -26,6 +26,7 @@ export interface AuthenticatedUser {
   role: "user" | "admin";
   isBlocked: boolean;
   isEmailVerified: boolean;
+  gravatarUrl?: string;
 }
 
 export interface LoginResponse {

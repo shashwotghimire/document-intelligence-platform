@@ -30,7 +30,11 @@ function Chat() {
   }, [chatId, navigate, mutate]);
   return (
     <SidebarProvider>
-      <ChatSidebar name={data.data.name} role={data.data.role} />
+      <ChatSidebar
+        name={data.data.name}
+        role={data.data.role}
+        gravatarUrl={data.data.gravatarUrl}
+      />
       <main className="flex flex-1 flex-col p-6">
         <div className="flex items-center justify-between gap-4 border-b -mx-6 px-6 py-2.5 mb-6 border-sidebar-border">
           <h1 className="truncate text-base font-semibold text-foreground ">

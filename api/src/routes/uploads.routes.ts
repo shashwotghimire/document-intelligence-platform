@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteFile,
   getFileStats,
   getStatsForTable,
   uploadFile,
@@ -24,5 +25,6 @@ router.get(
   rolesGuard("admin"),
   getStatsForTable,
 );
+router.delete("/:documentId", authMiddleware, rolesGuard("admin"), deleteFile);
 
 export default router;
