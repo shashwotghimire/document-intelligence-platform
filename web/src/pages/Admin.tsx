@@ -12,7 +12,11 @@ function Admin() {
 
   return (
     <SidebarProvider>
-      <AdminSidebar name={data.data.name} role={data.data.role} />
+      <AdminSidebar
+        name={data.data.name}
+        role={data.data.role}
+        gravatarUrl={data.data.gravatarUrl}
+      />
       <main className="flex-1 p-6">
         <Outlet />
       </main>

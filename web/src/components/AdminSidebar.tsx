@@ -6,16 +6,17 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { LayoutDashboard, Settings, Users, MessageSquare } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { LogoDark } from "./Logo";
+import { Button } from "./ui/button";
 
 interface AdminSidebarProps {
   name: string;
   role: string;
+  gravatarUrl?: string;
 }
 
 const navItems = [
@@ -55,17 +56,17 @@ export function AdminSidebar(data: AdminSidebarProps) {
             <SidebarMenu className="gap-2">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
+                  <Button
                     asChild
-                    isActive={pathname === item.url}
-                    size="lg"
-                    className="text-base hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
+                    data-active={pathname === item.url}
+                    variant="ghost"
+                    className="h-11 w-full cursor-pointer justify-start rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft [&_svg]:size-4 [&_svg]:transition-transform hover:[&_svg]:scale-110"
                   >
                     <NavLink to={item.url}>
                       <item.icon />
-                      <span>{item.title}</span>
+                      {item.title}
                     </NavLink>
-                  </SidebarMenuButton>
+                  </Button>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -73,8 +74,19 @@ export function AdminSidebar(data: AdminSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
-        <p>{data.name}</p>
-        <p className="text-neutral-500">{data.role}</p>
+        <div className="flex gap-4">
+          {data.gravatarUrl && (
+            <img
+              alt={`${data.name}'s avatar`}
+              className="size-9 rounded-full mt-2"
+              src={data.gravatarUrl}
+            />
+          )}
+          <div className="flex flex-col ">
+            <p>{data.name}</p>
+            <p className="text-neutral-500">{data.role}</p>
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

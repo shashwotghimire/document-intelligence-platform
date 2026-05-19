@@ -7,14 +7,14 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Plus } from "lucide-react";
 import { LogoDark } from "./Logo";
 import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
 import Loading from "./Loading";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { Button } from "./ui/button";
 
 interface ChatSidebarProps {
   name: string;
@@ -23,6 +23,7 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar(data: ChatSidebarProps) {
+  const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
   const { data: chatData, isPending } = useGetAllChats();
   const chats = chatData?.chats ?? [];
@@ -35,7 +36,11 @@ export function ChatSidebar(data: ChatSidebarProps) {
     return <Loading />;
   }
   const handleCreateChat = () => {
-    mutate();
+    mutate(undefined, {
+      onSuccess: (data) => {
+        navigate(`/chat/${data.id}`);
+      },
+    });
   };
   return (
     <Sidebar>
@@ -48,15 +53,15 @@ export function ChatSidebar(data: ChatSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  size="lg"
-                  className="cursor-pointer text-base hover:bg-ink hover:text-cream hover:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
+                <Button
+                  disabled={createIsPending}
+                  onClick={handleCreateChat}
+                  variant="ghost"
+                  className="h-11 w-full cursor-pointer justify-start rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft disabled:cursor-not-allowed disabled:opacity-60 [&_svg]:size-4 [&_svg]:transition-transform hover:[&_svg]:scale-110"
                 >
                   <Plus />
-                  <span onClick={handleCreateChat}>
-                    {createIsPending ? "Creating..." : "New chat "}
-                  </span>
-                </SidebarMenuButton>
+                  {createIsPending ? "Creating..." : "New chat"}
+                </Button>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -70,16 +75,16 @@ export function ChatSidebar(data: ChatSidebarProps) {
             <SidebarMenu className="mt-1 gap-1">
               {chats.map((conversation) => (
                 <SidebarMenuItem key={conversation.id}>
-                  <SidebarMenuButton
-                    isActive={chatId === conversation.id}
-                    size="lg"
-                    className="cursor-pointer text-sm hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft [&_svg]:transition-transform hover:[&_svg]:scale-110"
+                  <Button
+                    asChild
+                    data-active={chatId === conversation.id}
+                    variant="ghost"
+                    className="h-10 w-full cursor-pointer justify-start rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft"
                   >
                     <NavLink to={`/chat/${conversation.id}`}>
-                      <span>{conversation.title}</span>
+                      {conversation.title}
                     </NavLink>
-                    {/* <span>{conversation.title}</span> */}
-                  </SidebarMenuButton>
+                  </Button>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

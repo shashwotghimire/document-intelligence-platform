@@ -38,9 +38,9 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
     return <Loading />;
   }
   return (
-    <main className="flex flex-col h-[85vh]  border bg-background gap-2">
-      <div className="flex-1 overflow-y-auto border border-blue-500">
-        <div className="flex flex-col gap-5 p-2 border border-red-500 max-w-4xl mx-auto">
+    <main className="flex flex-col h-[88vh]  border rounded-2xl bg-background gap-2">
+      <div className="flex-1 overflow-y-auto ">
+        <div className="flex flex-col gap-5 p-2  max-w-4xl mx-auto">
           {displayMessage.map((message) => {
             const isUser = message.messageRole === "user";
             return (

@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatBytes } from "@/lib/format-bytes";
 import { useGetStatsForTable } from "@/service/api/stats/stats.api";
 import { useDeleteDocument } from "@/service/api/upload/upload.api";
 import Loading from "./Loading";
@@ -68,42 +69,46 @@ export function AdminTable() {
         </TableHeader>
         <TableBody>
           {documents.length > 0 ? (
-            documents.map((document) => (
-              <TableRow key={document.id}>
-                <TableCell>{document.filename}</TableCell>
-                <TableCell>{document.fileType}</TableCell>
-                <TableCell>
-                  {(document.fileSize / 1024).toFixed(2)} MB
-                </TableCell>
-                <TableCell className="text-right">
-                  {document.fileProcessingStatus}
-                </TableCell>
-                <TableCell className="text-right">
-                  {document.uploader.name}
-                </TableCell>
-                <TableCell className="text-right">
-                  {document.uploader.role}
-                </TableCell>
-                <TableCell className="text-right">
-                  {new Date(document.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    className="cursor-pointer"
-                    aria-label={`Delete ${document.filename}`}
-                    disabled={deleteDocument.isPending}
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteDocument(document.id)}
-                  >
-                    {deleteDocument.isPending &&
-                    deleteDocumentId === document.id
-                      ? "Deleting"
-                      : "Delete"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
+            documents.map((document) => {
+              const fileSize = formatBytes(document.fileSize);
+
+              return (
+                <TableRow key={document.id}>
+                  <TableCell>{document.filename}</TableCell>
+                  <TableCell>{document.fileType}</TableCell>
+                  <TableCell>
+                    {fileSize.value} {fileSize.unit}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {document.fileProcessingStatus}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {document.uploader.name}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {document.uploader.role}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {new Date(document.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      className="cursor-pointer"
+                      aria-label={`Delete ${document.filename}`}
+                      disabled={deleteDocument.isPending}
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteDocument(document.id)}
+                    >
+                      {deleteDocument.isPending &&
+                      deleteDocumentId === document.id
+                        ? "Deleting"
+                        : "Delete"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
               <TableCell

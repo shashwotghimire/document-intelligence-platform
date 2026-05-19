@@ -3,6 +3,7 @@ import { FileModal } from "@/components/FileModal";
 import Loading from "@/components/Loading";
 import { StatsCard } from "@/components/StatsCard";
 import { Button } from "@/components/ui/button";
+import { formatBytes } from "@/lib/format-bytes";
 import { useGetStats } from "@/service/api/stats/stats.api";
 import { useRef, useState } from "react";
 
@@ -17,6 +18,14 @@ function AdminDashboard() {
   if (isPending) {
     return <Loading />;
   }
+  const stats = data?.data ?? {
+    totalDocuments: 0,
+    totalChunks: 0,
+    totalUsers: 0,
+    totalSize: 0,
+  };
+  const storage = formatBytes(stats.totalSize);
+
   return (
     <section>
       <div className="flex items-start justify-between gap-4">
@@ -70,23 +79,23 @@ function AdminDashboard() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
           title="Documents"
-          value={data.data.totalDocuments}
+          value={stats.totalDocuments}
           label="Uploaded files"
         />
         <StatsCard
           title="Vector Chunks"
-          value={data.data.totalChunks}
+          value={stats.totalChunks}
           label="Indexed chunks"
         />
         <StatsCard
           title="Active Users"
-          value={data.data.totalUsers}
+          value={stats.totalUsers}
           label="Currently enabled"
         />
         <StatsCard
           title="Storage"
-          value={(data.data.totalSize / 1024).toFixed(2)}
-          unit="MB"
+          value={storage.value}
+          unit={storage.unit}
           label="Used space"
         />
       </div>
