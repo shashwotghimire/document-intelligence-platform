@@ -1,3 +1,4 @@
+import { AdminTable } from "@/components/AdminTable";
 import { FileModal } from "@/components/FileModal";
 import Loading from "@/components/Loading";
 import { StatsCard } from "@/components/StatsCard";
@@ -30,7 +31,7 @@ function AdminDashboard() {
             className="h-10 mb-4 cursor-pointer px-4 text-base transition-colors hover:bg-neutral-600"
             onClick={handleSelectFiles}
           >
-            + Select File
+            + Upload File
           </Button>
           {file && (
             <FileModal
@@ -89,7 +90,9 @@ function AdminDashboard() {
           label="Used space"
         />
       </div>
-      <div></div>
+      <div className="p-2 mt-12 mx-auto border border-border">
+        <AdminTable />
+      </div>
     </section>
   );
 }

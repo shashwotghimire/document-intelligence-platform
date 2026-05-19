@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getFileStats, uploadFile } from "../controllers/uploads.controller";
+import {
+  getFileStats,
+  getStatsForTable,
+  uploadFile,
+} from "../controllers/uploads.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
 import { rolesGuard } from "../middlewares/roles.middleware";
@@ -14,5 +18,11 @@ router.post(
   uploadFile,
 );
 router.get("/stats", authMiddleware, rolesGuard("admin"), getFileStats);
+router.get(
+  "/tableStats",
+  authMiddleware,
+  rolesGuard("admin"),
+  getStatsForTable,
+);
 
 export default router;

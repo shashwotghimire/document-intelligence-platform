@@ -8,80 +8,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-];
+import { useGetStatsForTable } from "@/service/api/stats/stats.api";
+import Loading from "./Loading";
 
 export function AdminTable() {
+  const { data, isPending, error } = useGetStatsForTable();
+  if (isPending) {
+    return <Loading />;
+  }
   return (
     <Table>
-      <TableCaption>A list of your recent invoices.</TableCaption>
+      <TableCaption>A list of your uploaded documents.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">Invoice</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Method</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
+          <TableHead>File name</TableHead>
+          <TableHead>File type</TableHead>
+          <TableHead>File size</TableHead>
+          <TableHead className="text-right">Status</TableHead>
+          <TableHead className="text-right">Uploader</TableHead>
+          <TableHead className="text-right">Role</TableHead>
+          <TableHead className="text-right">Uploaded At</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
-            <TableCell>{invoice.paymentMethod}</TableCell>
-            <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+        {data.data.map((data) => (
+          <TableRow key={data.id}>
+            <TableCell>{data.filename}</TableCell>
+            <TableCell>{data.fileType}</TableCell>
+            <TableCell>{(data.fileSize / 1024).toFixed(2)} MB</TableCell>
+            <TableCell className="text-right">
+              {data.fileProcessingStatus}
+            </TableCell>
+            <TableCell className="text-right">{data.uploader.name}</TableCell>
+            <TableCell className="text-right">{data.uploader.role}</TableCell>
+            <TableCell className="text-right">
+              {new Date(data.createdAt).toLocaleDateString()}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className="text-right">$2,500.00</TableCell>
-        </TableRow>
-      </TableFooter>
+      <TableFooter></TableFooter>
     </Table>
   );
 }

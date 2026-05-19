@@ -73,18 +73,31 @@ export const sendMessage = asyncHandler<AuthRequest>(
       content: aiResponse,
       messageRole: "ai",
     });
-    // await Chat.update(
-    //   {
-    //     updatedAt: new Date(),
-    //   },
-    //   { where: { id: chatId } },
-    // );
-    await Chat.update(
-      { count: chat.count + 1 },
-      {
-        where: { id: chatId },
-      },
-    );
+    const currentMessageCount = chat.count ?? 0;
+    const isFirstMessage = currentMessageCount === 0;
+    const chatUpdate: { count: number; title?: string } = {
+      count: currentMessageCount + 1,
+    };
+
+    if (isFirstMessage) {
+      const generatedTitle = await generateAnswer(`
+        Create a short chat title based on this user message.
+        Return only the title, no quotes, no punctuation unless needed.
+        Max 6 words.
+  
+        Message:
+        ${content}
+      `);
+
+      const title = generatedTitle?.trim();
+      console.log(generatedTitle);
+      if (title) {
+        chatUpdate.title = title;
+      }
+    }
+    await Chat.update(chatUpdate, {
+      where: { id: chatId },
+    });
     res.status(201).json(
       new ApiResponse(true, "Message sent successfully", {
         userMessage,

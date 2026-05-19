@@ -50,9 +50,10 @@ interface CreateChatData {
   createdAt: string;
 }
 
-interface CreateChatRequest {
+export interface CreateChatRequest {
   title?: string;
 }
+
 export const useGetAllChats = () => {
   return useQuery<AllUserChatsData, Error>({
     queryKey: ["user", "chats"],

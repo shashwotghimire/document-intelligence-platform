@@ -12,6 +12,7 @@ import type {
 } from "../validation/auth.validation";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendMail";
+import { Op } from "sequelize";
 
 export const registerUser = asyncHandler(
   async (req: AuthRequest, res: Response) => {
@@ -171,3 +172,67 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     }),
   );
 });
+
+export const getAllUsers = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const searchQuery = req.query.search;
+    const offset = (page - 1) * limit;
+    let whereClause: any = {};
+    if (searchQuery) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: {
+          name: { [Op.iLike]: `%${searchQuery}%` },
+        },
+      };
+    }
+    const { rows, count } = await User.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+    });
+    return res.status(200).json(
+      new ApiResponse(true, "Fetched all users", {
+        users: rows,
+        pagination: {
+          page,
+          limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+        },
+      }),
+    );
+  },
+);
+
+export const blockUser = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const { userId } = req.params;
+    if (!userId || Array.isArray(userId))
+      throw new ApiError(404, "User not found", "User not found");
+    const user = await User.findByPk(userId);
+    if (!user) throw new ApiError(404, "User not found", "User not found");
+    user.isBlocked = true;
+    await user.save();
+    return res
+      .status(200)
+      .json(new ApiResponse(true, "User blocked successfully", null));
+  },
+);
+
+export const unblockUser = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const { userId } = req.params;
+    if (!userId || Array.isArray(userId))
+      throw new ApiError(404, "User not found", "User not found");
+    const user = await User.findByPk(userId);
+    if (!user) throw new ApiError(404, "User not found", "User not found");
+    user.isBlocked = false;
+    await user.save();
+    return res
+      .status(200)
+      .json(new ApiResponse(true, "User unblocked successfully", null));
+  },
+);

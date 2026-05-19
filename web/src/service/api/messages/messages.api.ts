@@ -55,6 +55,7 @@ export const useSendMessage = (chatId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", "messages", chatId] });
+      queryClient.invalidateQueries({ queryKey: ["user", "chats"] });
     },
   });
 };

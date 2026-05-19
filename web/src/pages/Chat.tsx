@@ -1,13 +1,16 @@
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useMe } from "@/service/api/auth/auth.api";
-import { useGetAllChats } from "@/service/api/chats/chat.api";
+import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
 import { ArrowLeft } from "lucide-react";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import ChatInterface from "@/components/ChatInterface";
+import { useEffect } from "react";
 
 function Chat() {
   const { chatId } = useParams<{ chatId: string }>();
+  const navigate = useNavigate();
+  const { mutate } = useCreateChat();
   const { data } = useMe();
   const { data: chatsData } = useGetAllChats();
   const chatTitle =
@@ -16,8 +19,15 @@ function Chat() {
   if (!data) {
     return null;
   }
-  if (!chatId) {
-  }
+  useEffect(() => {
+    if (!chatId) {
+      mutate(undefined, {
+        onSuccess: (data) => {
+          navigate(`/chat/${data.id}`, { replace: true });
+        },
+      });
+    }
+  }, [chatId, navigate, mutate]);
   return (
     <SidebarProvider>
       <ChatSidebar name={data.data.name} role={data.data.role} />

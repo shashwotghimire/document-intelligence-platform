@@ -90,3 +90,21 @@ export const getFileStats = asyncHandler<AuthRequest>(
     );
   },
 );
+
+export const getStatsForTable = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const documents = await Document.findAll({
+      where: {
+        uploadedBy: req.user.id,
+      },
+      include: {
+        model: User,
+        as: "uploader",
+        attributes: ["name", "role"],
+      },
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(true, "Stats fetched successfully", documents));
+  },
+);
