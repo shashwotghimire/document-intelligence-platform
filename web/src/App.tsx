@@ -10,6 +10,7 @@ import Chat from "@/pages/Chat";
 import EmailVerify from "@/pages/EmailVerify";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
+import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <Route path="/verify-email" element={<EmailVerify />} />
       <Route element={<ProtectedRoutes allowedRoles={["admin", "user"]} />}>
         <Route path="/chat/:chatId?" element={<Chat />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route element={<ProtectedRoutes allowedRoles={["admin"]} />}>
         <Route path="/admin" element={<Admin />}>

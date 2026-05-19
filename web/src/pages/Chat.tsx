@@ -16,9 +16,6 @@ function Chat() {
   const chatTitle =
     chatsData?.chats.find((chat) => chat.id === chatId)?.title ?? "Chat";
 
-  if (!data) {
-    return null;
-  }
   useEffect(() => {
     if (!chatId) {
       mutate(undefined, {
@@ -28,9 +25,15 @@ function Chat() {
       });
     }
   }, [chatId, navigate, mutate]);
+
+  if (!data) {
+    return null;
+  }
+
   return (
     <SidebarProvider>
       <ChatSidebar
+        email={data.data.email}
         name={data.data.name}
         role={data.data.role}
         gravatarUrl={data.data.gravatarUrl}

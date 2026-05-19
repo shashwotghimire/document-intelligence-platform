@@ -57,6 +57,18 @@ export interface VerifyEmailResponse {
   };
 }
 
+export interface UpdateProfileRequest {
+  currentPassword?: string;
+  name: string;
+  newPassword?: string;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data: AuthenticatedUser;
+}
+
 export const useRegister = () =>
   useMutation<RegisterResponse, Error, RegisterRequest>({
     mutationFn: async (data) => {
@@ -107,6 +119,18 @@ export const useVerifyEmail = () =>
         {
           params: { token },
         },
+      );
+
+      return response.data;
+    },
+  });
+
+export const useUpdateProfile = () =>
+  useMutation<UpdateProfileResponse, Error, UpdateProfileRequest>({
+    mutationFn: async (data) => {
+      const response = await axiosInstance.patch<UpdateProfileResponse>(
+        "/auth/profile",
+        data,
       );
 
       return response.data;

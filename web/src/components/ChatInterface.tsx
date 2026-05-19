@@ -12,7 +12,7 @@ interface ChatInterfaceProps {
   chatId?: string;
 }
 const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
-  const [content, setContent] = React.useState<any>("");
+  const [content, setContent] = React.useState("");
   const [pendingContent, setPendingContent] = useState("");
   const { data = [], isPending, error } = useGetMessages(chatId);
   const displayMessage = [...data].reverse();
@@ -25,7 +25,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate(content);
+    mutate({ content });
     setPendingContent(content);
     setContent("");
   };
@@ -108,7 +108,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
           <Button
             type="submit"
             className="h-9 rounded-2xl p-4 cursor-pointer hover:bg-neutral-600 transition-colors shadow-sm"
-            disabled={sendMessagePending}
+            disabled={!chatId || !content.trim() || sendMessagePending}
           >
             <Send />
           </Button>

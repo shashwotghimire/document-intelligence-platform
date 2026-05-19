@@ -15,8 +15,10 @@ import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
 import Loading from "./Loading";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Button } from "./ui/button";
+import { UserAccountMenu } from "./UserAccountMenu";
 
 interface ChatSidebarProps {
+  email: string;
   name: string;
   role: string;
   gravatarUrl?: string;
@@ -93,19 +95,12 @@ export function ChatSidebar(data: ChatSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <div className="flex gap-4">
-          {data.gravatarUrl && (
-            <img
-              alt={`${data.name}'s avatar`}
-              className="size-9 rounded-full mt-2"
-              src={data.gravatarUrl}
-            />
-          )}
-          <div className="flex flex-col ">
-            <p>{data.name}</p>
-            <p className="text-neutral-500">{data.role}</p>
-          </div>
-        </div>
+        <UserAccountMenu
+          email={data.email}
+          gravatarUrl={data.gravatarUrl}
+          name={data.name}
+          role={data.role}
+        />
       </SidebarFooter>
     </Sidebar>
   );

@@ -13,6 +13,7 @@ function Admin() {
   return (
     <SidebarProvider>
       <AdminSidebar
+        email={data.data.email}
         name={data.data.name}
         role={data.data.role}
         gravatarUrl={data.data.gravatarUrl}

@@ -9,6 +9,7 @@ import { signToken } from "../utils/jwt";
 import type {
   LoginUserInput,
   RegisterUserInput,
+  UpdateProfileInput,
 } from "../validation/auth.validation";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendMail";
@@ -134,6 +135,53 @@ export const getUser = asyncHandler<AuthRequest>(
 
     res.status(200).json(
       new ApiResponse(true, "User fetched successfully", {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked,
+        isEmailVerified: user.isEmailVerified,
+        gravatarUrl,
+      }),
+    );
+  },
+);
+
+export const updateProfile = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user.id;
+    const { currentPassword, name, newPassword } =
+      req.body as UpdateProfileInput;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      throw new ApiError(404, "User not found", "Invalid user");
+    }
+
+    user.name = name;
+
+    if (currentPassword && newPassword) {
+      const isPasswordValid = await verifyPassword(
+        currentPassword,
+        user.password,
+      );
+
+      if (!isPasswordValid) {
+        throw new ApiError(
+          401,
+          "Invalid password",
+          "Current password is incorrect",
+        );
+      }
+
+      user.password = await hashPassword(newPassword);
+    }
+
+    await user.save();
+    const gravatarUrl = await ensureGravatarUrl(user);
+
+    return res.status(200).json(
+      new ApiResponse(true, "Profile updated successfully", {
         id: user.id,
         name: user.name,
         email: user.email,

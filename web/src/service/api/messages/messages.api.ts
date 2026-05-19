@@ -31,6 +31,7 @@ interface SendMessageResponse {
 }
 export const useGetMessages = (chatId?: string) => {
   return useQuery<GetAllMessagesData[], Error>({
+    enabled: Boolean(chatId),
     queryKey: ["user", "messages", chatId],
     queryFn: async () => {
       const res = (
@@ -42,10 +43,14 @@ export const useGetMessages = (chatId?: string) => {
   });
 };
 
-export const useSendMessage = (chatId: string) => {
+export const useSendMessage = (chatId?: string) => {
   const queryClient = useQueryClient();
   return useMutation<SendMessageResponse, Error, SendMessageRequest>({
-    mutationFn: async (content) => {
+    mutationFn: async ({ content }) => {
+      if (!chatId) {
+        throw new Error("Chat ID is required to send a message.");
+      }
+
       const res = (
         await axiosInstance.post<SendMessageResponse>(`/messages/${chatId}`, {
           content,
