@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { ApiError } from "../utils/ApiError";
 
-const allowedExtensions = new Set([".pdf", ".docx", ".txt"]);
+const allowedExtensions = new Set([".pdf", ".docx", ".txt", ".csv"]);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -26,9 +26,7 @@ export const upload = multer({
     const extension = path.extname(file.originalname).toLowerCase();
 
     if (!allowedExtensions.has(extension)) {
-      return cb(
-        new ApiError(400, "Bad Request", "Unsupported file type"),
-      );
+      return cb(new ApiError(400, "Bad Request", "Unsupported file type"));
     }
 
     cb(null, true);

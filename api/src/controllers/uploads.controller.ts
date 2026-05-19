@@ -5,7 +5,7 @@ import type { AuthRequest } from "../middlewares/auth.middleware";
 import { Document, DocumentFileType } from "../models/document.model";
 import { ApiError } from "../utils/ApiError";
 import asyncHandler from "../utils/asyncHandler";
-import { extractText } from "../services/textExtractor.service";
+import { extractText } from "../services/parse-documents.service";
 import { chunkDocument } from "../services/chunk.service";
 import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
@@ -18,6 +18,7 @@ const getDocumentFileType = (filename: string): DocumentFileType => {
   if (extension === ".pdf") return "pdf";
   if (extension === ".docx") return "docx";
   if (extension === ".txt") return "txt";
+  if (extension === ".csv") return "csv";
 
   throw new ApiError(400, "Bad Request", "Unsupported file type");
 };

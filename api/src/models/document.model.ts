@@ -9,7 +9,7 @@ import type { ForeignKey, InferAttributes } from "sequelize";
 import sequelize from "../db";
 import { User } from "./user.model";
 
-export type DocumentFileType = "pdf" | "docx" | "txt";
+export type DocumentFileType = "pdf" | "docx" | "txt" | "csv";
 export type fileProcessedType = "Processing" | "Processed" | "Failed";
 
 export class Document extends Model<
@@ -37,7 +37,7 @@ Document.init(
       allowNull: false,
     },
     fileType: {
-      type: DataTypes.ENUM("pdf", "docx", "txt"),
+      type: DataTypes.ENUM("pdf", "docx", "txt", "csv"),
       allowNull: false,
     },
     filePath: {
