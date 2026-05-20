@@ -1,6 +1,7 @@
 import { PDFParse } from "pdf-parse";
 import fs from "fs/promises";
 import { parse } from "csv-parse/sync";
+import mammoth from "mammoth";
 
 export async function extractText(
   filePath: string,
@@ -29,6 +30,12 @@ export async function extractText(
           .join(", "),
       )
       .join("\n");
+  }
+
+  if (fileType === "docx") {
+    const rawText = await mammoth.extractRawText({ path: filePath });
+    console.log(rawText);
+    return rawText.value;
   }
 
   throw new Error("Unsupported file type");
