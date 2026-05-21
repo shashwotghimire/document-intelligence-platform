@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
 export const s3 = new S3Client({
@@ -23,4 +27,14 @@ export const uploadToS3 = async (file: Express.Multer.File) => {
     key: fileKey,
     // bucket: process.env.AWS_S3_BUCKET!,
   };
+};
+
+export const deleteFromS3 = async (key: string) => {
+  const data = await s3.send(
+    new DeleteObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET!,
+      Key: key,
+    }),
+  );
+  return data;
 };

@@ -11,7 +11,7 @@ import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
-import { uploadToS3 } from "../services/s3.service";
+import { deleteFromS3, s3, uploadToS3 } from "../services/s3.service";
 
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
@@ -136,9 +136,8 @@ export const deleteFile = asyncHandler<AuthRequest>(
         documentId: document.id,
       },
     });
+    await deleteFromS3(document.filePath);
     await document.destroy();
-    await fs.unlink(document.filePath).catch(() => undefined);
-
     return res
       .status(200)
       .json(new ApiResponse(true, "File deleted successfully", null));
