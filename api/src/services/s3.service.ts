@@ -4,6 +4,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import path from "path";
 
 export const s3 = new S3Client({
   region: process.env.AWS_REGION!,
@@ -14,7 +15,8 @@ export const s3 = new S3Client({
 });
 
 export const uploadToS3 = async (file: Express.Multer.File) => {
-  const fileKey = `uploads/${crypto.randomUUID()}-${file.originalname}`;
+  const extension = path.extname(file.originalname);
+  const fileKey = `uploads/${crypto.randomUUID()}-${extension}`;
   await s3.send(
     new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET!,

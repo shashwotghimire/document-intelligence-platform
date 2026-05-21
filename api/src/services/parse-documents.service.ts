@@ -1,5 +1,4 @@
 import { PDFParse } from "pdf-parse";
-import fs from "fs/promises";
 import { parse } from "csv-parse/sync";
 import mammoth from "mammoth";
 

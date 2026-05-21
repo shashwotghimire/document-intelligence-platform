@@ -1,5 +1,4 @@
 import { Response } from "express";
-import fs from "fs/promises";
 import path from "path";
 import type { AuthRequest } from "../middlewares/auth.middleware";
 import { Document, DocumentFileType } from "../models/document.model";
@@ -11,7 +10,8 @@ import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
-import { deleteFromS3, s3, uploadToS3 } from "../services/s3.service";
+import { deleteFromS3, uploadToS3 } from "../services/s3.service";
+import sequelize from "../db";
 
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
@@ -31,36 +31,53 @@ export const uploadFile = asyncHandler<AuthRequest>(
     }
 
     const { originalname, size } = req.file;
-
+    let uploadedFileKey: string | null = null;
     try {
       const uploadedFile = await uploadToS3(req.file);
-      const file = await Document.create({
-        filename: originalname,
-        fileType: getDocumentFileType(originalname),
-        filePath: uploadedFile.key,
-        fileSize: size,
-        uploadedBy: req.user.id,
-        fileProcessingStatus: "Processing",
-      });
-
-      const rawText = await extractText(req.file.buffer, file.fileType);
+      uploadedFileKey = uploadedFile.key;
+      const rawText = await extractText(
+        req.file!.buffer,
+        getDocumentFileType(originalname),
+      );
       const chunks = await chunkDocument(rawText);
-
       const chunksWithEmbeddings = await Promise.all(
         chunks.map(async (chunk, index) => {
           const embedding = await generateEmbedding(chunk);
 
           return {
-            documentId: file.id,
             chunkText: chunk,
             chunkIndex: index,
             vectorEmbedding: embedding,
           };
         }),
       );
-      await DocumentChunk.bulkCreate(chunksWithEmbeddings);
-      file.fileProcessingStatus = "Processed";
-      await file.save();
+      const file = await sequelize.transaction(async (t) => {
+        const file = await Document.create(
+          {
+            filename: originalname,
+            fileType: getDocumentFileType(originalname),
+            filePath: uploadedFile.key,
+            fileSize: size,
+            uploadedBy: req.user.id,
+            fileProcessingStatus: "Processing",
+          },
+          { transaction: t },
+        );
+
+        await DocumentChunk.bulkCreate(
+          chunksWithEmbeddings.map((chunk) => ({
+            ...chunk,
+            documentId: file.id,
+          })),
+          {
+            transaction: t,
+          },
+        );
+        file.fileProcessingStatus = "Processed";
+        await file.save({ transaction: t });
+        return file;
+      });
+
       return res.status(200).json(
         new ApiResponse(true, "file uploaded successfully", {
           file,
@@ -69,6 +86,9 @@ export const uploadFile = asyncHandler<AuthRequest>(
         }),
       );
     } catch (error) {
+      if (uploadedFileKey) {
+        await deleteFromS3(uploadedFileKey).catch(console.error);
+      }
       throw error;
     }
   },
@@ -130,14 +150,16 @@ export const deleteFile = asyncHandler<AuthRequest>(
     if (!document) {
       throw new ApiError(404, "Document not found", "Invalid document id");
     }
-
-    await DocumentChunk.destroy({
-      where: {
-        documentId: document.id,
-      },
-    });
     await deleteFromS3(document.filePath);
-    await document.destroy();
+    await sequelize.transaction(async (t) => {
+      await DocumentChunk.destroy({
+        where: {
+          documentId: document.id,
+        },
+        transaction: t,
+      });
+      await document.destroy({ transaction: t });
+    });
     return res
       .status(200)
       .json(new ApiResponse(true, "File deleted successfully", null));
