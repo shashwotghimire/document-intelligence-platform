@@ -11,6 +11,7 @@ import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
+import { uploadToS3 } from "../services/s3.service";
 
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
@@ -29,18 +30,20 @@ export const uploadFile = asyncHandler<AuthRequest>(
       throw new ApiError(400, "Bad Request", "No file uploaded");
     }
 
-    const { originalname, path: filePath, size } = req.file;
+    const { originalname, size } = req.file;
 
     try {
+      const uploadedFile = await uploadToS3(req.file);
       const file = await Document.create({
         filename: originalname,
         fileType: getDocumentFileType(originalname),
-        filePath,
+        filePath: uploadedFile.key,
         fileSize: size,
         uploadedBy: req.user.id,
         fileProcessingStatus: "Processing",
       });
-      const rawText = await extractText(file.filePath, file.fileType);
+
+      const rawText = await extractText(req.file.buffer, file.fileType);
       const chunks = await chunkDocument(rawText);
 
       const chunksWithEmbeddings = await Promise.all(
@@ -66,7 +69,6 @@ export const uploadFile = asyncHandler<AuthRequest>(
         }),
       );
     } catch (error) {
-      await fs.unlink(filePath).catch(() => undefined);
       throw error;
     }
   },
