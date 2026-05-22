@@ -28,7 +28,7 @@ Chat.init(
     },
     title: {
       type: DataTypes.STRING,
-      defaultValue: "Another øne",
+      defaultValue: "New chat",
       allowNull: false,
     },
     userId: {

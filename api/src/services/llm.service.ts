@@ -12,3 +12,17 @@ export const generateAnswer = async (prompt: string) => {
 
   return response.text;
 };
+
+export async function* streamResponse(prompt: string) {
+  const result = await ai.models.generateContentStream({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+  });
+
+  for await (const chunk of result) {
+    const chunkText = chunk.text;
+    if (chunkText) {
+      yield chunkText;
+    }
+  }
+}

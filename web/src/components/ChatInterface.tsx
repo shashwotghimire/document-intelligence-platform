@@ -3,7 +3,7 @@ import Loading from "./Loading";
 import { Input } from "./ui/input";
 import {
   useGetMessages,
-  useSendMessage,
+  useGetStreamingMessages,
 } from "@/service/api/messages/messages.api";
 import { Button } from "./ui/button";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,28 +17,37 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
   const { data = [], isPending, error } = useGetMessages(chatId);
   const displayMessage = [...data].reverse();
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const {
-    mutate,
-    isPending: sendMessagePending,
-    error: sendMessageError,
-  } = useSendMessage(chatId);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  // const {
+  //   mutate,
+  //   isPending: sendMessagePending,
+  //   error: sendMessageError,
+  // } = useSendMessage(chatId);
+
+  const {
+    sendMessage,
+    streamingMessage,
+    isStreaming,
+    error: isStreamingError,
+  } = useGetStreamingMessages(chatId);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    mutate({ content });
+    // mutate({ content });
     setPendingContent(content);
     setContent("");
+    await sendMessage(content);
   };
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
     });
-  }, [data, sendMessagePending]);
+  }, [data, streamingMessage]);
   if (isPending) {
     return <Loading />;
   }
   return (
-    <main className="flex flex-col h-[88vh]  border rounded-2xl bg-background gap-2">
+    <main className="flex flex-col h-[88vh]  bg-background gap-2">
       <div className="flex-1 overflow-y-auto ">
         <div className="flex flex-col gap-5 p-2  max-w-4xl mx-auto">
           {displayMessage.map((message) => {
@@ -46,13 +55,13 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
             return (
               <div
                 key={message.id}
-                className={`flex ${isUser ? "justify-end" : "justify-start"} `}
+                className={`  flex ${isUser ? "justify-end" : "items-center"} `}
               >
                 <div
-                  className={`max-w-2xl rounded-2xl border p-2 text-sm ${
+                  className={`max-w-2xl rounded-2xl p-2 text-sm ${
                     isUser
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                      ? "mt-1 bg-primary text-primary-foreground border"
+                      : "mt-3 bg-background text-foreground max-w-5xl"
                   }`}
                 >
                   {message.content}
@@ -60,32 +69,30 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
               </div>
             );
           })}
-          {sendMessagePending && (
+          {isStreaming && (
             <>
               <div className="flex justify-end">
-                <div className="bg-primary text-primary-foreground max-w-2xl p-2 rounded-2xl">
+                <div className="max-w-2xl rounded-2xl p-2 text-sm mt-1 bg-primary text-primary-foreground border">
                   {pendingContent}
                 </div>
               </div>
-              <div className="flex justify-start">
-                <div className="bg-muted text-foreground p-2 rounded-2xl">
-                  {" "}
-                  . . .{" "}
+              <div className="flex items-center">
+                <div className="rounded-2xl p-2 text-sm mt-3 bg-background text-foreground max-w-5xl ">
+                  {streamingMessage || ". . ."}
                 </div>
               </div>
             </>
           )}
-          {sendMessageError && (
+          {isStreamingError && (
             <>
               <div className="flex justify-end">
                 <div className="bg-primary text-primary-foreground max-w-2xl p-2 rounded-2xl">
                   {pendingContent}
                 </div>
               </div>
-              <div className="flex justify-start">
+              <div className="flex justify-start rounded-2xl">
                 <div className="bg-muted text-red-500 p-2">
-                  {" "}
-                  Something went wrong{" "}
+                  Something went wrong
                 </div>
               </div>
             </>
@@ -108,7 +115,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
           <Button
             type="submit"
             className="h-9 rounded-2xl p-4 cursor-pointer hover:bg-neutral-600 transition-colors shadow-sm"
-            disabled={!chatId || !content.trim() || sendMessagePending}
+            disabled={!chatId || !content.trim() || isStreaming}
           >
             <Send />
           </Button>

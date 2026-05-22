@@ -8,7 +8,7 @@ import { Chat } from "../models/chat.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import sequelize from "../db";
 import { QueryTypes } from "sequelize";
-import { generateAnswer } from "../services/llm.service";
+import { generateAnswer, streamResponse } from "../services/llm.service";
 
 export const sendMessage = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -60,17 +60,31 @@ export const sendMessage = asyncHandler<AuthRequest>(
     **USER QUERY**
     ${userMessage.content}
 
-    **BAD QUERY**
-    if user asks some irrelevant question or something out of scope of the document or something you cannot infer from the context, send some generic reply like i cannot answer this or something
+    **MESSAGE FORMAT**
+    THIS MESSAGE/RESPONSE IS BEING DIRECTLY RENDERED INSINDE A DIV ELEMENT W/O ANY FORMATTING. ANSWER SHOULD BE COMPLEMENTING THIS IMPLEMENTATION.
     `;
-    const aiResponse = await generateAnswer(prompt);
-    // console.log(aiResponse);
-    if (!aiResponse) {
-      throw new ApiError(500, "AI response not found", "Internal server error");
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    let fullResponse = "";
+
+    for await (const chunk of streamResponse(prompt)) {
+      fullResponse += chunk;
+      res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
     }
+
+    // const aiResponse = await generateAnswer(prompt);
+    // // console.log(aiResponse);
+    // if (!aiResponse) {
+    //   throw new ApiError(500, "AI response not found", "Internal server error");
+    // }
+
     const aiMessage = await Messages.create({
       chatId,
-      content: aiResponse,
+      content: fullResponse,
       messageRole: "ai",
     });
     const currentMessageCount = chat.count ?? 0;
@@ -98,13 +112,15 @@ export const sendMessage = asyncHandler<AuthRequest>(
     await Chat.update(chatUpdate, {
       where: { id: chatId },
     });
-    res.status(201).json(
-      new ApiResponse(true, "Message sent successfully", {
-        userMessage,
-        // topMatch: top5 ?? null,
-        aiMessage,
-      }),
-    );
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+    // res.status(201).json(
+    //   new ApiResponse(true, "Message sent successfully", {
+    //     userMessage,
+    //     // topMatch: top5 ?? null,
+    //     aiMessage,
+    //   }),
+    // );
   },
 );
 

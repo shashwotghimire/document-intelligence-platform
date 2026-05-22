@@ -36,8 +36,10 @@ export interface DeleteDocumentResponse {
   data: null;
 }
 
-export const useUploadDocument = () =>
-  useMutation<DocumentUploadResponse, Error, DocumentUploadRequest>({
+export const useUploadDocument = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<DocumentUploadResponse, Error, DocumentUploadRequest>({
     mutationFn: async ({ file }) => {
       const formData = new FormData();
       formData.append("file", file);
@@ -54,7 +56,11 @@ export const useUploadDocument = () =>
 
       return response.data;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
   });
+};
 
 export const useDeleteDocument = () => {
   const queryClient = useQueryClient();
