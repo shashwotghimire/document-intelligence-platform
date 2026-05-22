@@ -18,12 +18,6 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
   const displayMessage = [...data].reverse();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // const {
-  //   mutate,
-  //   isPending: sendMessagePending,
-  //   error: sendMessageError,
-  // } = useSendMessage(chatId);
-
   const {
     sendMessage,
     streamingMessage,
@@ -33,7 +27,6 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    // mutate({ content });
     setPendingContent(content);
     setContent("");
     await sendMessage(content);
