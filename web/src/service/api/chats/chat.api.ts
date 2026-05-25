@@ -1,5 +1,10 @@
 import axiosInstance from "@/service/axios/axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 
 export interface Chat {
   id: string;
@@ -55,12 +60,30 @@ export interface CreateChatRequest {
 }
 
 export const useGetAllChats = () => {
-  return useQuery<AllUserChatsData, Error>({
+  return useInfiniteQuery<
+    AllUserChatsData,
+    Error,
+    InfiniteData<AllUserChatsData>
+  >({
     queryKey: ["user", "chats"],
-    queryFn: async () => {
-      const res = (await axiosInstance.get<GetAllUserChatsResponse>(`/chats`))
-        .data;
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      const res = (
+        await axiosInstance.get<GetAllUserChatsResponse>(`/chats`, {
+          params: {
+            page: pageParam,
+            limit: 20,
+          },
+        })
+      ).data;
       return res.data;
+    },
+    getNextPageParam: (lastPage: AllUserChatsData) => {
+      const { page, totalPages } = lastPage.pagination;
+      if (lastPage.pagination.page < totalPages) {
+        return page + 1;
+      }
+      return undefined;
     },
   });
 };

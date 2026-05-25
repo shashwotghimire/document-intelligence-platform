@@ -12,10 +12,11 @@ import {
 import { Plus } from "lucide-react";
 import { LogoDark } from "./Logo";
 import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
-import Loading from "./Loading";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Button } from "./ui/button";
 import { UserAccountMenu } from "./UserAccountMenu";
+import { LoadingSkeleton } from "./LoadingSkeleton";
+import { useEffect, useRef } from "react";
 
 interface ChatSidebarProps {
   email: string;
@@ -27,16 +28,21 @@ interface ChatSidebarProps {
 export function ChatSidebar(data: ChatSidebarProps) {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
-  const { data: chatData, isPending } = useGetAllChats();
-  const chats = chatData?.chats ?? [];
+  const {
+    data: chatData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetAllChats();
+  const chats = chatData?.pages.flatMap((page) => page.chats) ?? [];
   const {
     mutate,
     isPending: createIsPending,
-    // isError: createIsError,
+    isError: createIsError,
   } = useCreateChat();
-  if (isPending) {
-    return <Loading />;
-  }
+  // if (isFetchingNextPage) {
+  //   return <Loading />;
+  // }
   const handleCreateChat = () => {
     mutate(undefined, {
       onSuccess: (data) => {
@@ -44,6 +50,31 @@ export function ChatSidebar(data: ChatSidebarProps) {
       },
     });
   };
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+
+    const current = loadMoreRef.current;
+
+    if (current) {
+      observer.observe(current);
+    }
+
+    return () => {
+      if (current) {
+        observer.unobserve(current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border pb-4">
@@ -64,6 +95,9 @@ export function ChatSidebar(data: ChatSidebarProps) {
                   <Plus />
                   {createIsPending ? "Creating..." : "New chat"}
                 </Button>
+                {createIsError && (
+                  <p className="text-red-500 text-sm">Error creating chat</p>
+                )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -89,6 +123,21 @@ export function ChatSidebar(data: ChatSidebarProps) {
                   </Button>
                 </SidebarMenuItem>
               ))}
+              {hasNextPage && (
+                // <Button
+                //   onClick={() => fetchNextPage()}
+                //   disabled={isFetchingNextPage}
+                //   className="cursor-pointer hover:bg-neutral-500"
+                // >
+                //   {isFetchingNextPage ? <LoadingSkeleton /> : "Load More"}
+                // </Button>
+                <div
+                  ref={loadMoreRef}
+                  className="flex h-10 items-center justify-center"
+                >
+                  {isFetchingNextPage && <LoadingSkeleton />}
+                </div>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

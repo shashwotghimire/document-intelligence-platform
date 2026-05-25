@@ -14,7 +14,9 @@ function Chat() {
   const { data } = useMe();
   const { data: chatsData } = useGetAllChats();
   const chatTitle =
-    chatsData?.chats.find((chat) => chat.id === chatId)?.title ?? "Chat";
+    chatsData?.pages
+      .flatMap((page) => page.chats)
+      .find((chat) => chat.id === chatId)?.title ?? "Chat";
 
   useEffect(() => {
     if (!chatId) {

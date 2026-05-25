@@ -8,6 +8,8 @@ import {
 import { Button } from "./ui/button";
 import React, { useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
+import { customComponents } from "./markdownComponents";
+
 interface ChatInterfaceProps {
   chatId?: string;
 }
@@ -57,7 +59,9 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
                       : "mt-3 bg-background text-foreground max-w-5xl"
                   }`}
                 >
-                  <Markdown>{message.content}</Markdown>
+                  <Markdown components={customComponents}>
+                    {message.content}
+                  </Markdown>
                 </div>
               </div>
             );

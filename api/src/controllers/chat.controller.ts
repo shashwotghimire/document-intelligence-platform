@@ -23,7 +23,7 @@ export const getAllChats = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user.id;
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || 20;
     const searchQuery = req.query.search;
     const offset = (page - 1) * limit;
 
