@@ -15,7 +15,7 @@ export const generateAnswer = async (prompt: string) => {
 
 export async function* streamResponse(prompt: string) {
   const result = await ai.models.generateContentStream({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     contents: prompt,
   });
 

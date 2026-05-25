@@ -42,8 +42,8 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
     return <Loading />;
   }
   return (
-    <main className="flex flex-col h-[88vh]  bg-background gap-2">
-      <div className="flex-1 overflow-y-auto ">
+    <main className="flex h-full min-h-0 flex-col bg-background gap-2">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex flex-col gap-5 p-2  max-w-4xl mx-auto">
           {displayMessage.map((message) => {
             const isUser = message.messageRole === "user";
@@ -75,7 +75,9 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
               </div>
               <div className="flex items-center">
                 <div className="rounded-2xl p-2 text-sm mt-3 bg-background text-foreground max-w-5xl ">
-                  {streamingMessage || ". . ."}
+                  <Markdown components={customComponents}>
+                    {streamingMessage || ". . ."}
+                  </Markdown>
                 </div>
               </div>
             </>
@@ -98,7 +100,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
         </div>
       </div>
 
-      <div className="p-1.5 ">
+      <div className="shrink-0 p-1.5">
         <form
           className="flex justify-between mx-auto max-w-4xl gap-4 "
           onSubmit={handleSendMessage}

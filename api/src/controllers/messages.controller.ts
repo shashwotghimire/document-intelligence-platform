@@ -8,7 +8,8 @@ import { Chat } from "../models/chat.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import sequelize from "../db";
 import { QueryTypes } from "sequelize";
-import { generateAnswer, streamResponse } from "../services/llm.service";
+import { streamResponse } from "../services/llm.service";
+import { generateTitlePrompt, systemPrompt } from "../utils/prompt";
 
 export const sendMessage = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -17,11 +18,6 @@ export const sendMessage = asyncHandler<AuthRequest>(
     if (!chatId || Array.isArray(chatId)) {
       throw new ApiError(400, "Bad Request", "Missing Chat id");
     }
-    const userMessage = await Messages.create({
-      content,
-      chatId,
-      messageRole: "user",
-    });
     const chat = await Chat.findOne({
       where: {
         id: chatId,
@@ -32,6 +28,12 @@ export const sendMessage = asyncHandler<AuthRequest>(
     if (!chat) {
       throw new ApiError(404, "Chat not found", "Invalid chat id");
     }
+    const userMessage = await Messages.create({
+      content,
+      chatId,
+      messageRole: "user",
+    });
+
     const userQueryEmbedding = await generateEmbedding(userMessage.content);
     const top5 = await sequelize.query(
       `
@@ -53,16 +55,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
       },
     );
     const context = top5.map((chunk: any) => chunk.chunkText).join("\n\n");
-    const prompt = `
-    Use the following context to answer user query.
-    **CONTEXT**
-    ${context}. This is the top 5 chunks retrieved from vector database according to the user query.
-    **USER QUERY**
-    ${userMessage.content}
-
-    **MESSAGE FORMAT**
-    THIS MESSAGE/RESPONSE IS BEING DIRECTLY RENDERED INSINDE A DIV ELEMENT W/O ANY FORMATTING. ANSWER SHOULD BE COMPLEMENTING THIS IMPLEMENTATION.
-    `;
+    const prompt = systemPrompt({ context, userMessage });
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -76,12 +69,6 @@ export const sendMessage = asyncHandler<AuthRequest>(
       res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
     }
 
-    // const aiResponse = await generateAnswer(prompt);
-    // // console.log(aiResponse);
-    // if (!aiResponse) {
-    //   throw new ApiError(500, "AI response not found", "Internal server error");
-    // }
-
     const aiMessage = await Messages.create({
       chatId,
       content: fullResponse,
@@ -94,17 +81,8 @@ export const sendMessage = asyncHandler<AuthRequest>(
     };
 
     if (isFirstMessage) {
-      const generatedTitle = await generateAnswer(`
-        Create a short chat title based on this user message.
-        Return only the title, no quotes, no punctuation unless needed.
-        Max 6 words.
-  
-        Message:
-        ${content}
-      `);
-
+      const generatedTitle = generateTitlePrompt(content);
       const title = generatedTitle?.trim();
-      console.log(generatedTitle);
       if (title) {
         chatUpdate.title = title;
       }
@@ -114,13 +92,6 @@ export const sendMessage = asyncHandler<AuthRequest>(
     });
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
-    // res.status(201).json(
-    //   new ApiResponse(true, "Message sent successfully", {
-    //     userMessage,
-    //     // topMatch: top5 ?? null,
-    //     aiMessage,
-    //   }),
-    // );
   },
 );
 

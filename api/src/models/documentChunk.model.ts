@@ -54,6 +54,7 @@ DocumentChunk.init(
   },
   {
     sequelize,
+    underscored: true,
     modelName: "DocumentChunk",
     tableName: "document_chunks",
   },

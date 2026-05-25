@@ -87,7 +87,8 @@ export function UserAccountMenu({
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem
-              className="cursor-pointer text-destructive transition-colors hover:bg-neutral-300 focus:bg-neutral-300"
+              variant="destructive"
+              className="cursor-pointer"
               onSelect={handleLogout}
             >
               <LogOut />

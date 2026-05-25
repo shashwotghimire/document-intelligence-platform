@@ -36,5 +36,10 @@ export async function extractText(
     return rawText.value;
   }
 
+  if (fileType === "txt") {
+    const rawText = fileBuffer.toString("utf-8");
+    return rawText;
+  }
+
   throw new Error("Unsupported file type");
 }

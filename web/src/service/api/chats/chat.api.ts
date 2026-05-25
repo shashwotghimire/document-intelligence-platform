@@ -59,6 +59,17 @@ export interface CreateChatRequest {
   title?: string;
 }
 
+export interface RenameChatRequest {
+  chatId: string;
+  title: string;
+}
+
+interface RenameChatResponse {
+  success: boolean;
+  message: string;
+  data: Chat;
+}
+
 export const useGetAllChats = () => {
   return useInfiniteQuery<
     AllUserChatsData,
@@ -93,6 +104,23 @@ export const useCreateChat = () => {
   return useMutation<CreateChatData, Error>({
     mutationFn: async () => {
       const res = (await axiosInstance.post<CreateChatResponse>("/chats")).data;
+      return res.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["user", "chats"] });
+    },
+  });
+};
+
+export const useRenameChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Chat, Error, RenameChatRequest>({
+    mutationFn: async ({ chatId, title }) => {
+      const res = (
+        await axiosInstance.patch<RenameChatResponse>(`/chats/${chatId}`, {
+          title,
+        })
+      ).data;
       return res.data;
     },
     onSuccess() {
