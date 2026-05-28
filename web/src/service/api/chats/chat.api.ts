@@ -64,10 +64,20 @@ export interface RenameChatRequest {
   title: string;
 }
 
+export interface DeleteChatRequest {
+  chatId: string;
+}
+
 interface RenameChatResponse {
   success: boolean;
   message: string;
   data: Chat;
+}
+
+interface DeleteChatResponse {
+  success: boolean;
+  message: string;
+  data: null;
 }
 
 export const useGetAllChats = () => {
@@ -120,6 +130,21 @@ export const useRenameChat = () => {
         await axiosInstance.patch<RenameChatResponse>(`/chats/${chatId}`, {
           title,
         })
+      ).data;
+      return res.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["user", "chats"] });
+    },
+  });
+};
+
+export const useDeleteChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation<null, Error, DeleteChatRequest>({
+    mutationFn: async ({ chatId }) => {
+      const res = (
+        await axiosInstance.delete<DeleteChatResponse>(`/chats/${chatId}`)
       ).data;
       return res.data;
     },

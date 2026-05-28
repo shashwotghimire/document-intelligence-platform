@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import ProtectedRoutes from "@/components/ProtectedRoutes";
 import PublicRoute from "@/components/PublicRoute";
@@ -13,7 +14,29 @@ import Login from "@/pages/Login";
 import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
 
+const getPageTitle = (pathname: string) => {
+  if (pathname === "/") return "documentGPT";
+  if (pathname === "/login") return "Sign in";
+  if (pathname === "/register") return "Create account";
+  if (pathname === "/verify-email") return "Verify email";
+  if (pathname.startsWith("/chat")) return "Chat";
+  if (pathname === "/profile") return "Profile";
+  if (pathname === "/admin" || pathname === "/admin/dashboard") {
+    return "Admin Dashboard";
+  }
+  if (pathname === "/admin/users") return "Users";
+  if (pathname === "/admin/settings") return "Settings";
+
+  return "documentGPT";
+};
+
 function App() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    document.title = getPageTitle(pathname);
+  }, [pathname]);
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />

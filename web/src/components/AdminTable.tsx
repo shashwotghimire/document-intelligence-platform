@@ -13,31 +13,29 @@ import {
 import { formatBytes } from "@/lib/format-bytes";
 import { useGetStatsForTable } from "@/service/api/stats/stats.api";
 import { useDeleteDocument } from "@/service/api/upload/upload.api";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import Loading from "./Loading";
 
 export function AdminTable() {
-  const [deleteDocumentId, setDeleteDocumentId] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<{
+    id: string;
+    filename: string;
+  } | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data, isPending } = useGetStatsForTable();
   const deleteDocument = useDeleteDocument();
   const documents = data?.data ?? [];
 
-  const handleDeleteDocument = async (documentId: string) => {
-    const shouldDelete = window.confirm(
-      "Delete this file and its processed chunks?",
-    );
+  const handleConfirmDeleteDocument = async () => {
+    if (!documentToDelete) return;
 
-    if (!shouldDelete) return;
-
-    setDeleteDocumentId(documentId);
     setDeleteError(null);
 
     try {
-      await deleteDocument.mutateAsync({ documentId });
+      await deleteDocument.mutateAsync({ documentId: documentToDelete.id });
+      setDocumentToDelete(null);
     } catch {
       setDeleteError("Unable to delete file. Please try again.");
-    } finally {
-      setDeleteDocumentId(null);
     }
   };
 
@@ -98,12 +96,14 @@ export function AdminTable() {
                       disabled={deleteDocument.isPending}
                       size="sm"
                       variant="destructive"
-                      onClick={() => handleDeleteDocument(document.id)}
+                      onClick={() =>
+                        setDocumentToDelete({
+                          id: document.id,
+                          filename: document.filename,
+                        })
+                      }
                     >
-                      {deleteDocument.isPending &&
-                      deleteDocumentId === document.id
-                        ? "Deleting"
-                        : "Delete"}
+                      Delete
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -121,6 +121,19 @@ export function AdminTable() {
           )}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        open={Boolean(documentToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentToDelete(null);
+          }
+        }}
+        title="Delete uploaded file?"
+        description="This will permanently delete the file and its processed chunks."
+        itemName={documentToDelete?.filename}
+        isPending={deleteDocument.isPending}
+        onConfirm={handleConfirmDeleteDocument}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Settings, Users, MessageSquare } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Users } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { LogoDark } from "./Logo";
 import { Button } from "./ui/button";
@@ -36,11 +36,6 @@ const navItems = [
     title: "Chat",
     url: "/chat",
     icon: MessageSquare,
-  },
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
   },
 ];
 

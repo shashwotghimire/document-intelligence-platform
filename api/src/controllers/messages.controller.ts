@@ -8,8 +8,18 @@ import { Chat } from "../models/chat.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import sequelize from "../db";
 import { QueryTypes } from "sequelize";
-import { streamResponse } from "../services/llm.service";
+import { generateAnswer, streamResponse } from "../services/llm.service";
 import { generateTitlePrompt, systemPrompt } from "../utils/prompt";
+
+const normalizeGeneratedTitle = (title?: string) => {
+  return title
+    ?.trim()
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .slice(0, 6)
+    .join(" ");
+};
 
 export const sendMessage = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -39,12 +49,12 @@ export const sendMessage = asyncHandler<AuthRequest>(
       `
       SELECT
     id,
-    "documentId",
-    "chunkText",
-    "chunkIndex",
-    "vectorEmbedding" <-> :embedding::vector AS distance
+    "document_id" AS "documentId",
+    "chunk_text" AS "chunkText",
+    "chunk_index" AS "chunkIndex",
+    "vector_embedding" <-> :embedding::vector AS distance
   FROM document_chunks
-  ORDER BY "vectorEmbedding" <-> :embedding::vector
+  ORDER BY "vector_embedding" <-> :embedding::vector
   LIMIT 5
       `,
       {
@@ -81,8 +91,8 @@ export const sendMessage = asyncHandler<AuthRequest>(
     };
 
     if (isFirstMessage) {
-      const generatedTitle = generateTitlePrompt(content);
-      const title = generatedTitle?.trim();
+      const generatedTitle = await generateAnswer(generateTitlePrompt(content));
+      const title = normalizeGeneratedTitle(generatedTitle);
       if (title) {
         chatUpdate.title = title;
       }

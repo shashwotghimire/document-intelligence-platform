@@ -21,6 +21,7 @@ import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { LogoDark } from "./Logo";
 import {
   useCreateChat,
+  useDeleteChat,
   useGetAllChats,
   type Chat,
 } from "@/service/api/chats/chat.api";
@@ -30,6 +31,7 @@ import { UserAccountMenu } from "./UserAccountMenu";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { RenameChatDialog } from "./RenameChatDialog";
 import { useEffect, useRef, useState } from "react";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 
 interface ChatSidebarProps {
   email: string;
@@ -46,6 +48,11 @@ export function ChatSidebar(data: ChatSidebarProps) {
     Chat,
     "id" | "title"
   > | null>(null);
+  const [chatToDelete, setChatToDelete] = useState<Pick<
+    Chat,
+    "id" | "title"
+  > | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const {
     data: chatData,
     fetchNextPage,
@@ -58,6 +65,10 @@ export function ChatSidebar(data: ChatSidebarProps) {
     isPending: createIsPending,
     isError: createIsError,
   } = useCreateChat();
+  const {
+    mutate: deleteChat,
+    isPending: deleteIsPending,
+  } = useDeleteChat();
   // if (isFetchingNextPage) {
   //   return <Loading />;
   // }
@@ -78,6 +89,30 @@ export function ChatSidebar(data: ChatSidebarProps) {
     if (!open) {
       setChatToRename(null);
     }
+  };
+  const handleConfirmDeleteChat = () => {
+    if (!chatToDelete) return;
+
+    setDeleteError(null);
+    deleteChat(
+      {
+        chatId: chatToDelete.id,
+      },
+      {
+        onSuccess: () => {
+          if (chatId === chatToDelete.id) {
+            const nextChat = chats.find((chat) => chat.id !== chatToDelete.id);
+            navigate(nextChat ? `/chat/${nextChat.id}` : "/chat", {
+              replace: true,
+            });
+          }
+          setChatToDelete(null);
+        },
+        onError: () => {
+          setDeleteError("Unable to delete chat. Please try again.");
+        },
+      },
+    );
   };
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -137,6 +172,11 @@ export function ChatSidebar(data: ChatSidebarProps) {
             Recents
           </SidebarGroupLabel>
           <SidebarGroupContent>
+            {deleteError && (
+              <p className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+                {deleteError}
+              </p>
+            )}
             <SidebarMenu className="mt-1 gap-1">
               {chats.map((conversation) => (
                 <SidebarMenuItem
@@ -181,6 +221,7 @@ export function ChatSidebar(data: ChatSidebarProps) {
                         <DropdownMenuItem
                           variant="destructive"
                           className="cursor-pointer"
+                          onSelect={() => setChatToDelete(conversation)}
                         >
                           <Trash2 />
                           Delete
@@ -222,6 +263,19 @@ export function ChatSidebar(data: ChatSidebarProps) {
         chat={chatToRename}
         open={renameDialogOpen}
         onOpenChange={handleRenameDialogOpenChange}
+      />
+      <DeleteConfirmationDialog
+        open={Boolean(chatToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setChatToDelete(null);
+          }
+        }}
+        title="Delete chat?"
+        description="This will permanently delete this chat and its messages."
+        itemName={chatToDelete?.title}
+        isPending={deleteIsPending}
+        onConfirm={handleConfirmDeleteChat}
       />
     </Sidebar>
   );
