@@ -1,8 +1,10 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { errorHandler } from "./middlewares/error.middleware";
+import { limiter } from "./middlewares/rate-limit.middleware";
 import authRoutes from "./routes/auth.routes";
 import healthRoutes from "./routes/health.route";
 import uploadRoutes from "./routes/uploads.routes";
@@ -11,6 +13,8 @@ import messageRoutes from "./routes/messages.route";
 import { swaggerSpec } from "./config/swagger";
 
 const app: express.Application = express();
+app.use(helmet());
+app.use(limiter);
 app.use(express.json());
 app.use(
   cors({
