@@ -19,6 +19,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
   const { data = [], isPending, error } = useGetMessages(chatId);
   const displayMessage = [...data].reverse();
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     sendMessage,
@@ -50,7 +51,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
             return (
               <div
                 key={message.id}
-                className={`  flex ${isUser ? "justify-end" : "items-center"} `}
+                className={`flex ${isUser ? "justify-end" : "justify-start"} `}
               >
                 <div
                   className={`max-w-2xl rounded-2xl p-2 text-sm ${
@@ -62,6 +63,47 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
                   <Markdown components={customComponents}>
                     {message.content}
                   </Markdown>
+                  {message.messageRole === "ai" &&
+                  message.content !=
+                    "I don't have enough information to answer that." &&
+                  message.referencedDocuments?.length ? (
+                    <div className="mt-3 border-t border-border/60 pt-2 text-xs text-muted-foreground">
+                      <div className="mb-1 font-medium text-muted-foreground">
+                        Referenced documents
+                      </div>
+
+                      <div className="space-y-1">
+                        {message.referencedDocuments.map((document) => (
+                          <p key={document.documentId}>
+                            {document.documentTitle}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {message.messageRole === "ai" &&
+                  message.followUpQuestions?.length ? (
+                    <div className="mt-3">
+                      <div className="mb-2 text-xs font-medium text-muted-foreground">
+                        Follow-up questions
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {message.followUpQuestions.map((question) => (
+                          <button
+                            key={question}
+                            type="button"
+                            className="cursor-pointer rounded-full border border-border/70 bg-muted/40 px-3 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={() => {
+                              setContent(question);
+                              inputRef.current?.focus();
+                            }}
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -106,6 +148,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
           onSubmit={handleSendMessage}
         >
           <Input
+            ref={inputRef}
             placeholder="Ask anything ..."
             className="border shadow-sm border-neutral-300 h-10 rounded-2xl active:border-neutral-500 focus-visible:ring-0"
             value={content}

@@ -2,11 +2,18 @@ import axiosInstance from "@/service/axios/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+export type ReferencedDocument = {
+  documentId: string;
+  documentTitle: string;
+  documentType: "pdf" | "txt" | "csv" | "docx";
+};
 interface GetAllMessagesData {
   id: string;
   chatId: string;
   content: string;
   messageRole: "ai" | "user";
+  referencedDocuments?: ReferencedDocument[] | null;
+  followUpQuestions?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }

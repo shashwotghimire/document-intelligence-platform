@@ -10,6 +10,11 @@ import { Chat } from "./chat.model";
 import sequelize from "../db";
 
 export type MessageRole = "user" | "ai";
+export type ReferencedDocument = {
+  documentId: string;
+  documentTitle: string;
+  documentType: "pdf" | "txt" | "csv" | "docx";
+};
 export class Messages extends Model<
   InferAttributes<Messages>,
   InferCreationAttributes<Messages>
@@ -18,6 +23,8 @@ export class Messages extends Model<
   declare chatId: ForeignKey<Chat["id"]>;
   declare content: string;
   declare messageRole: MessageRole;
+  declare referencedDocuments: CreationOptional<ReferencedDocument[] | null>;
+  declare followUpQuestions: CreationOptional<string[] | null>;
 }
 
 Messages.init(
@@ -43,6 +50,14 @@ Messages.init(
     messageRole: {
       type: DataTypes.ENUM("user", "ai"),
       allowNull: false,
+    },
+    referencedDocuments: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    followUpQuestions: {
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
   },
   {

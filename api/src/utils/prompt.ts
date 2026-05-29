@@ -80,3 +80,46 @@ export const generateTitlePrompt = (content: string) => {
          Message:
          ${content}`;
 };
+
+export const generateFollowUpQuestions = ({
+  userQuestion,
+  context,
+  aiMessage,
+}: {
+  userQuestion: any;
+  context: string;
+  aiMessage: string;
+}) => {
+  return `
+    Generate exactly 3 short follow-up questions the user may want to ask next.
+
+    Rules:
+    - Questions must be answerable from the provided document context.
+    - Do not ask generic questions.
+    - Do not include citations.
+    - Return only valid JSON that can be easily parsed: inside ['question1', 'q2','q3'] . not markdown
+    - Response example: [
+"What are the typical sources of content that can be indexed?",
+"What is a document in the context of search applications?",
+"What is an inverted index?"
+]
+- real json array
+    - If no useful follow-ups exist, return [].
+
+    **********IMPORTANT***************
+    - NEVER  I REPEAT, NEVER EVER RESPOND FOLLOW UP QUESTIONS WITH MARKDOWN JSON.   \`\`\`json
+  // example
+  \`\`\`
+    - JUST ANSWER IN THE SAID FORMAT " ["","",""]
+
+    User question:
+    ${userQuestion}
+
+    Answer:
+    ${aiMessage}
+
+    Context:
+    - This is the top 5 chunks retrieved from vector database according to the user query.
+    ${context}
+    `;
+};
