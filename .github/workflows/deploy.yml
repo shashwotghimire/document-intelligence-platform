@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/documentgpt
 
@@ -46,5 +50,5 @@ jobs:
               --name documentgpt-api \
               --restart always \
               -p 8080:8080 \
-              --env-file /root/project/document-intelligence-platform/.env \
+              --env-file /root/project/document-intelligence-platform/api/.env \
               ${{ env.IMAGE }}:latest
