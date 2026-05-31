@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://documentgpt.shashwotghimire.com.np",
+      "https://www.documentgpt.shashwotghimire.com.np",
     ],
     credentials: true,
   }),
