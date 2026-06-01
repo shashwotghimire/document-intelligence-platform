@@ -50,7 +50,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
     });
 
     const userQueryEmbedding = await generateEmbedding(userMessage.content);
-    const top5 = await sequelize.query(
+    const top15 = await sequelize.query(
       `
        SELECT
       d."id" AS "documentId",
@@ -72,7 +72,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
         type: QueryTypes.SELECT,
       },
     );
-    const context = top5
+    const context = top15
       .map(
         (chunk: any, index) =>
           `Source:${index + 1}: ${chunk.documentName}:\n ${chunk.chunkText}, `,
@@ -81,7 +81,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
 
     const referencedDocuments: ReferencedDocument[] = Array.from(
       new Map(
-        top5.map((chunk: any) => [
+        top15.map((chunk: any) => [
           chunk.documentId,
           {
             documentId: chunk.documentId,

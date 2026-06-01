@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({
 
 export const generateAnswer = async (prompt: string) => {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-2.5-flash",
     contents: prompt,
   });
 
@@ -15,7 +15,7 @@ export const generateAnswer = async (prompt: string) => {
 
 export async function* streamResponse(prompt: string) {
   const result = await ai.models.generateContentStream({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-2.5-flash",
     contents: prompt,
   });
 

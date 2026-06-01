@@ -132,8 +132,8 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
                 </div>
               </div>
               <div className="flex justify-start rounded-2xl">
-                <div className="bg-muted text-red-500 p-2">
-                  Something went wrong
+                <div className="text-red-500 p-2">
+                  Limit exceeded please try again later
                 </div>
               </div>
             </>
