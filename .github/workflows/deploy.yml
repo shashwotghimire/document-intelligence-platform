@@ -50,5 +50,5 @@ jobs:
               --name documentgpt-api \
               --restart always \
               -p 8080:8080 \
-              --env-file /root/project/document-intelligence-platform/api/.env \
+              --env-file /root/projects/document-intelligence-platform/document-intelligence-platform/api/.env \
               ${{ env.IMAGE }}:latest
