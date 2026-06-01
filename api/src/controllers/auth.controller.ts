@@ -168,7 +168,7 @@ export const updateProfile = asyncHandler<AuthRequest>(
 
       if (!isPasswordValid) {
         throw new ApiError(
-          401,
+          400,
           "Invalid password",
           "Current password is incorrect",
         );
