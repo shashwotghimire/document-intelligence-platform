@@ -1,4 +1,5 @@
 import { AdminTable } from "@/components/AdminTable";
+import { LogsTable } from "@/components/LogsTable";
 import { FileModal } from "@/components/FileModal";
 import Loading from "@/components/Loading";
 import { StatsCard } from "@/components/StatsCard";
@@ -101,6 +102,10 @@ function AdminDashboard() {
       </div>
       <div className="p-2 mt-12 mx-auto border border-border">
         <AdminTable />
+      </div>
+      <div className="p-2 mt-8 mx-auto border border-border">
+        <h2 className="text-lg font-semibold px-2 pt-2">Activity Logs</h2>
+        <LogsTable />
       </div>
     </section>
   );

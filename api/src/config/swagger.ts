@@ -135,6 +135,17 @@ export const swaggerSpec = swaggerJSDoc({
             updatedAt: { type: "string", format: "date-time" },
           },
         },
+        Log: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            userId: { type: "string", format: "uuid" },
+            action: { type: "string", example: "document_uploaded" },
+            data: { type: "string", example: "Uploaded quarterly-report.pdf" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          },
+        },
         Stats: {
           type: "object",
           properties: {

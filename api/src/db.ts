@@ -20,6 +20,7 @@ export const connectDB = async () => {
     await import("./models/documentChunk.model.js");
     await import("./models/chat.model.js");
     await import("./models/messages.model.js");
+    await import("./models/logs.model.js");
     await import("./models/associations.js");
     // await sequelize.sync();
     // console.log("Database synced");

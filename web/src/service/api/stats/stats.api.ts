@@ -17,6 +17,7 @@ interface StatsTableDocument {
   filename: string;
   fileType: "pdf" | "docx" | "txt";
   filePath: string;
+  fileUrl: string;
   fileSize: number;
   fileProcessingStatus: "Processing" | "Processed" | "Failed";
   uploadedBy: string;
