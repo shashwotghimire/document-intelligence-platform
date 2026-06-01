@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useGetLogs } from "@/service/api/logs/logs.api";
+import { useGetLogs, type Log } from "@/service/api/logs/logs.api";
 import {
   Table,
   TableBody,
@@ -39,7 +39,7 @@ export function LogsTable() {
         </TableHeader>
         <TableBody>
           {logs.length > 0 ? (
-            logs.map((log) => (
+            logs.map((log: Log) => (
               <TableRow key={log.id}>
                 <TableCell className="font-medium">{log.action}</TableCell>
                 <TableCell className="max-w-sm truncate text-muted-foreground">
