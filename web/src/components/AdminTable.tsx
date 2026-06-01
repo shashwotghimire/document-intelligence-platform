@@ -72,7 +72,16 @@ export function AdminTable() {
 
               return (
                 <TableRow key={document.id}>
-                  <TableCell>{document.filename}</TableCell>
+                  <TableCell>
+                    <a
+                      href={document.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-4 hover:text-blue-500 transition-colors"
+                    >
+                      {document.filename}
+                    </a>
+                  </TableCell>
                   <TableCell>{document.fileType}</TableCell>
                   <TableCell>
                     {fileSize.value} {fileSize.unit}

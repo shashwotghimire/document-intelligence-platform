@@ -3,6 +3,7 @@ import { Document } from "./document.model";
 import { DocumentChunk } from "./documentChunk.model";
 import { Chat } from "./chat.model";
 import { Messages } from "./messages.model";
+import { Logs } from "./logs.model";
 
 User.hasMany(Document, {
   foreignKey: "uploadedBy",
@@ -12,6 +13,11 @@ User.hasMany(Document, {
 User.hasMany(Chat, {
   foreignKey: "userId",
   as: "chats",
+});
+
+User.hasMany(Logs, {
+  foreignKey: "userId",
+  as: "logs",
 });
 
 Document.belongsTo(User, {
@@ -42,4 +48,9 @@ Chat.hasMany(Messages, {
 Messages.belongsTo(Chat, {
   foreignKey: "chatId",
   as: "chat",
+});
+
+Logs.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
 });

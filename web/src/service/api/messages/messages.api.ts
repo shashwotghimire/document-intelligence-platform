@@ -96,6 +96,7 @@ export const useGetStreamingMessages = (chatId?: string) => {
               queryKey: ["user", "messages", chatId],
             });
             queryClient.invalidateQueries({ queryKey: ["user", "chats"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
           }
         }
       }

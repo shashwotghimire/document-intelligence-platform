@@ -10,6 +10,7 @@ import healthRoutes from "./routes/health.route";
 import uploadRoutes from "./routes/uploads.routes";
 import chatRoutes from "./routes/chat.routes";
 import messageRoutes from "./routes/messages.route";
+import logRoutes from "./routes/logs.routes";
 import { swaggerSpec } from "./config/swagger";
 
 const app: express.Application = express();
@@ -37,6 +38,7 @@ app.use("/api/health", healthRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/logs", logRoutes);
 
 app.use(errorHandler);
 export default app;

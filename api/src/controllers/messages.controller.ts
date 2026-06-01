@@ -15,6 +15,7 @@ import {
   systemPrompt,
 } from "../utils/prompt";
 import { parseFollowUpQuestions } from "../utils/parseResponse";
+import { logEvent } from "../services/logger.service";
 
 const normalizeGeneratedTitle = (title?: string) => {
   return title
@@ -159,6 +160,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
     await Chat.update(chatUpdate, {
       where: { id: chatId },
     });
+    await logEvent(req.user.id, "message_sent", `Chat ${chatId}: ${content}`);
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
   },

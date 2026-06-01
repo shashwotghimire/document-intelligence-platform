@@ -58,6 +58,7 @@ export const useUploadDocument = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
   });
 };
@@ -75,6 +76,7 @@ export const useDeleteDocument = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
   });
 };

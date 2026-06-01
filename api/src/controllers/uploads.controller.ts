@@ -10,8 +10,9 @@ import { DocumentChunk } from "../models/documentChunk.model";
 import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
-import { deleteFromS3, uploadToS3 } from "../services/s3.service";
+import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../services/s3.service";
 import sequelize from "../db";
+import { logEvent } from "../services/logger.service";
 
 const getDocumentFileType = (filename: string): DocumentFileType => {
   const extension = path.extname(filename).toLowerCase();
@@ -78,6 +79,7 @@ export const uploadFile = asyncHandler<AuthRequest>(
         return file;
       });
 
+      await logEvent(req.user.id, "file_uploaded", `Uploaded ${originalname}`);
       return res.status(200).json(
         new ApiResponse(true, "file uploaded successfully", {
           file,
@@ -126,9 +128,15 @@ export const getStatsForTable = asyncHandler(
         attributes: ["name", "role"],
       },
     });
+    const documentsWithUrl = await Promise.all(
+      documents.map(async (doc) => ({
+        ...doc.toJSON(),
+        fileUrl: await getS3PresignedUrl(doc.filePath),
+      })),
+    );
     return res
       .status(200)
-      .json(new ApiResponse(true, "Stats fetched successfully", documents));
+      .json(new ApiResponse(true, "Stats fetched successfully", documentsWithUrl));
   },
 );
 
@@ -160,6 +168,7 @@ export const deleteFile = asyncHandler<AuthRequest>(
       });
       await document.destroy({ transaction: t });
     });
+    await logEvent(req.user.id, "file_deleted", `Deleted ${document.filename}`);
     return res
       .status(200)
       .json(new ApiResponse(true, "File deleted successfully", null));
