@@ -18,7 +18,7 @@ export const Logo = () => {
   );
 };
 
-export const LogoDark = () => {
+export const LogoDark = ({ textClassName = "text-black" }: { textClassName?: string }) => {
   return (
     <Link
       to="/chat"
@@ -30,7 +30,7 @@ export const LogoDark = () => {
       </div>
 
       <div className="flex items-end gap-1 group-data-[collapsible=icon]:hidden">
-        <span className="font-serif text-2xl font-bold tracking-tight text-black">
+        <span className={`font-serif text-2xl font-bold tracking-tight ${textClassName}`}>
           documentGPT
         </span>
         <span className="mb-1.5 h-1 w-1 rounded-full bg-lime-400" />
