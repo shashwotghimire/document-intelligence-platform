@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   EllipsisVertical,
-  MessageSquare,
   Pencil,
   Plus,
   Trash2,
@@ -220,7 +219,6 @@ export function ChatSidebar(data: ChatSidebarProps) {
                       aria-label={conversation.title}
                       onClick={closeSidebarOnMobile}
                     >
-                      <MessageSquare data-icon="inline-start" />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {conversation.title}
                       </span>
