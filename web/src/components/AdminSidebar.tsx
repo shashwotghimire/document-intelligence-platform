@@ -6,12 +6,15 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { LayoutDashboard, MessageSquare, Users } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { LogoDark } from "./Logo";
-import { Button } from "./ui/button";
 import { UserAccountMenu } from "./UserAccountMenu";
 
 interface AdminSidebarProps {
@@ -41,36 +44,53 @@ const navItems = [
 
 export function AdminSidebar(data: AdminSidebarProps) {
   const { pathname } = useLocation();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const closeSidebarOnMobile = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border pb-4">
-        <LogoDark />
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="flex w-full flex-row items-center justify-between border-b border-sidebar-border px-4 pb-4 pt-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-b-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pb-8 group-data-[collapsible=icon]:pt-5">
+        <div className="group-data-[collapsible=icon]:hidden">
+          <LogoDark />
+        </div>
+        <SidebarTrigger className="shrink-0 border border-sidebar-border bg-sidebar shadow-sm opacity-0 transition-opacity group-hover:opacity-100 group-data-[collapsible=icon]:opacity-100" />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="mt-4 border-l border-sidebar-border pl-3">
+        <SidebarGroup className="mt-4 border-l border-sidebar-border pl-3 group-data-[collapsible=icon]:mt-0 group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:px-2">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
+            <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-5">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <Button
+                  <SidebarMenuButton
                     asChild
-                    data-active={pathname === item.url}
-                    variant="ghost"
-                    className="h-11 w-full cursor-pointer justify-start rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft [&_svg]:size-4 [&_svg]:transition-transform hover:[&_svg]:scale-110"
+                    isActive={pathname === item.url}
+                    size="lg"
+                    tooltip={item.title}
+                    className="h-11 cursor-pointer rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft group-data-[collapsible=icon]:justify-center [&_svg]:transition-transform hover:[&_svg]:scale-110"
                   >
-                    <NavLink to={item.url}>
-                      <item.icon />
-                      {item.title}
+                    <NavLink
+                      to={item.url}
+                      aria-label={item.title}
+                      onClick={closeSidebarOnMobile}
+                    >
+                      <item.icon data-icon="inline-start" />
+                      <span className="group-data-[collapsible=icon]:hidden">
+                        {item.title}
+                      </span>
                     </NavLink>
-                  </Button>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border group-data-[collapsible=icon]:items-center">
         <UserAccountMenu
           email={data.email}
           gravatarUrl={data.gravatarUrl}
@@ -78,6 +98,7 @@ export function AdminSidebar(data: AdminSidebarProps) {
           role={data.role}
         />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

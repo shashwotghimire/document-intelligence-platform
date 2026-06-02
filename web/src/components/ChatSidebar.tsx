@@ -7,7 +7,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -17,7 +22,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  EllipsisVertical,
+  MessageSquare,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { LogoDark } from "./Logo";
 import {
   useCreateChat,
@@ -26,7 +37,6 @@ import {
   type Chat,
 } from "@/service/api/chats/chat.api";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { Button } from "./ui/button";
 import { UserAccountMenu } from "./UserAccountMenu";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { RenameChatDialog } from "./RenameChatDialog";
@@ -43,6 +53,7 @@ interface ChatSidebarProps {
 export function ChatSidebar(data: ChatSidebarProps) {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
+  const { isMobile, setOpenMobile } = useSidebar();
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [chatToRename, setChatToRename] = useState<Pick<
     Chat,
@@ -72,10 +83,17 @@ export function ChatSidebar(data: ChatSidebarProps) {
   // if (isFetchingNextPage) {
   //   return <Loading />;
   // }
+  const closeSidebarOnMobile = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const handleCreateChat = () => {
     mutate(undefined, {
       onSuccess: (data) => {
         navigate(`/chat/${data.id}`);
+        closeSidebarOnMobile();
       },
     });
   };
@@ -140,71 +158,84 @@ export function ChatSidebar(data: ChatSidebarProps) {
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border pb-4">
-        <LogoDark />
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="flex w-full flex-row items-center justify-between border-b border-sidebar-border px-4 pb-4 pt-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-b-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pb-8 group-data-[collapsible=icon]:pt-5">
+        <div className="group-data-[collapsible=icon]:hidden">
+          <LogoDark />
+        </div>
+        <SidebarTrigger className="shrink-0 border border-sidebar-border bg-sidebar shadow-sm opacity-0 transition-opacity group-hover:opacity-100 group-data-[collapsible=icon]:opacity-100" />
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup className="mt-4 border-l border-sidebar-border py-1 pl-2 pr-1">
+        <SidebarGroup className="mt-4 border-l border-sidebar-border py-1 pl-2 pr-1 group-data-[collapsible=icon]:mt-0 group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:px-2">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
+            <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-5">
               <SidebarMenuItem>
-                <Button
+                <SidebarMenuButton
                   disabled={createIsPending}
                   onClick={handleCreateChat}
-                  variant="ghost"
-                  className="h-11 w-full cursor-pointer justify-start rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft disabled:cursor-not-allowed disabled:opacity-60 [&_svg]:size-4 [&_svg]:transition-transform hover:[&_svg]:scale-110"
+                  size="lg"
+                  tooltip={createIsPending ? "Creating..." : "New chat"}
+                  className="h-11 cursor-pointer rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft disabled:cursor-not-allowed disabled:opacity-60 group-data-[collapsible=icon]:justify-center [&_svg]:transition-transform hover:[&_svg]:scale-110"
                 >
-                  <Plus />
-                  {createIsPending ? "Creating..." : "New chat"}
-                </Button>
+                  <Plus data-icon="inline-start" />
+                  <span className="group-data-[collapsible=icon]:hidden">
+                    {createIsPending ? "Creating..." : "New chat"}
+                  </span>
+                </SidebarMenuButton>
                 {createIsError && (
-                  <p className="text-red-500 text-sm">Error creating chat</p>
+                  <p className="text-red-500 text-sm group-data-[collapsible=icon]:hidden">
+                    Error creating chat
+                  </p>
                 )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-1">
+        <SidebarGroup className="mt-1 group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel className="font-bold text-md mb-2 ">
             Recents
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {deleteError && (
-              <p className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+              <p className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600 group-data-[collapsible=icon]:hidden">
                 {deleteError}
               </p>
             )}
-            <SidebarMenu className="mt-1 gap-1">
+            <SidebarMenu className="mt-1 gap-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-5">
               {chats.map((conversation) => (
                 <SidebarMenuItem
                   key={conversation.id}
                   className="group relative"
                 >
-                  <Button
+                  <SidebarMenuButton
                     asChild
-                    data-active={chatId === conversation.id}
-                    variant="ghost"
-                    className="h-10 w-full cursor-pointer justify-start rounded-lg px-3 pr-10 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft"
+                    isActive={chatId === conversation.id}
+                    tooltip={conversation.title}
+                    className="h-10 cursor-pointer rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-ink hover:text-cream hover:shadow-soft data-[active=true]:bg-ink data-[active=true]:text-cream data-[active=true]:shadow-soft group-data-[collapsible=icon]:justify-center"
                   >
                     <NavLink
                       to={`/chat/${conversation.id}`}
-                      className="block min-w-0 truncate"
+                      aria-label={conversation.title}
+                      onClick={closeSidebarOnMobile}
                     >
-                      {conversation.title}
+                      <MessageSquare data-icon="inline-start" />
+                      <span className="group-data-[collapsible=icon]:hidden">
+                        {conversation.title}
+                      </span>
                     </NavLink>
-                  </Button>
+                  </SidebarMenuButton>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button
+                      <SidebarMenuAction
                         type="button"
                         aria-label={`Open actions for ${conversation.title}`}
-                        className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-white opacity-0 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100"
+                        showOnHover
+                        className="size-8 cursor-pointer data-[state=open]:opacity-100"
                       >
-                        <EllipsisVertical className="size-4" />
-                      </button>
+                        <EllipsisVertical />
+                      </SidebarMenuAction>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-36">
                       <DropdownMenuGroup>
@@ -251,7 +282,7 @@ export function ChatSidebar(data: ChatSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border group-data-[collapsible=icon]:items-center">
         <UserAccountMenu
           email={data.email}
           gravatarUrl={data.gravatarUrl}
@@ -277,6 +308,7 @@ export function ChatSidebar(data: ChatSidebarProps) {
         isPending={deleteIsPending}
         onConfirm={handleConfirmDeleteChat}
       />
+      <SidebarRail />
     </Sidebar>
   );
 }

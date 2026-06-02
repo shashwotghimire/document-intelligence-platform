@@ -23,13 +23,13 @@ export const LogoDark = () => {
     <Link
       to="/chat"
       aria-label="Go to chat"
-      className="flex items-center gap-3 p-1.5"
+      className="flex items-center gap-3 p-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0"
     >
       <div className="relative flex h-7 w-7 items-center justify-center rounded-full bg-lime-400">
         <div className="h-3 w-3 rounded-full bg-black" />
       </div>
 
-      <div className="flex items-end gap-1">
+      <div className="flex items-end gap-1 group-data-[collapsible=icon]:hidden">
         <span className="font-serif text-2xl font-bold tracking-tight text-black">
           documentGPT
         </span>

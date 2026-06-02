@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Settings } from "lucide-react";
+import { CircleUserRound, LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -44,7 +44,7 @@ export function UserAccountMenu({
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex min-w-0 items-center gap-3 group-data-[collapsible=icon]:justify-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -59,9 +59,12 @@ export function UserAccountMenu({
                 src={gravatarUrl}
               />
             ) : (
-              <span className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
-                {getInitials(name)}
-              </span>
+              <>
+                <span className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">
+                  {getInitials(name)}
+                </span>
+                <CircleUserRound className="hidden size-9 text-muted-foreground group-data-[collapsible=icon]:block" />
+              </>
             )}
           </button>
         </DropdownMenuTrigger>
@@ -97,7 +100,7 @@ export function UserAccountMenu({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
         <p className="truncate text-sm font-medium text-foreground">{name}</p>
         <p className="truncate text-xs capitalize text-muted-foreground">
           {role}

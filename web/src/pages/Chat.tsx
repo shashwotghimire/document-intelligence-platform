@@ -1,5 +1,5 @@
 import { ChatSidebar } from "@/components/ChatSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useMe } from "@/service/api/auth/auth.api";
 import { useCreateChat, useGetAllChats } from "@/service/api/chats/chat.api";
 import { ArrowLeft } from "lucide-react";
@@ -40,18 +40,21 @@ function Chat() {
         role={data.data.role}
         gravatarUrl={data.data.gravatarUrl}
       />
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b -mx-6 px-6 py-2.5 mb-6 border-sidebar-border">
-          <h1 className="truncate text-base font-semibold text-foreground ">
-            {chatTitle}
-          </h1>
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6">
+        <div className="-mx-4 mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-sidebar-border px-4 py-2.5 sm:-mx-6 sm:mb-6 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <SidebarTrigger className="md:hidden" />
+            <h1 className="truncate text-base font-semibold text-foreground">
+              {chatTitle}
+            </h1>
+          </div>
           {data.data.role === "admin" && (
             <NavLink
               to="/admin"
               className="inline-flex items-center gap-2 whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="size-5" />
-              <span>Admin Panel</span>
+              <span className="hidden sm:inline">Admin Panel</span>
             </NavLink>
           )}
         </div>
