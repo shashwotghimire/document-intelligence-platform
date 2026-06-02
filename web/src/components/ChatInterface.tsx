@@ -117,9 +117,17 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
               </div>
               <div className="flex items-center">
                 <div className="rounded-2xl p-2 text-sm mt-3 bg-background text-foreground max-w-5xl ">
-                  <Markdown components={customComponents}>
-                    {streamingMessage || ". . ."}
-                  </Markdown>
+                  {streamingMessage ? (
+                    <Markdown components={customComponents}>
+                      {streamingMessage}
+                    </Markdown>
+                  ) : (
+                    <span className="flex items-center gap-1 py-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:0ms]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:150ms]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:300ms]" />
+                    </span>
+                  )}
                 </div>
               </div>
             </>
