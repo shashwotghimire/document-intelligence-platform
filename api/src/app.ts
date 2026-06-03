@@ -12,6 +12,7 @@ import chatRoutes from "./routes/chat.routes";
 import messageRoutes from "./routes/messages.route";
 import logRoutes from "./routes/logs.routes";
 import { swaggerSpec } from "./config/swagger";
+import { allowedFrontendOrigins } from "./config/frontend";
 
 const app: express.Application = express();
 app.use(helmet());
@@ -19,10 +20,7 @@ app.use(limiter);
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://www.documentgpt.shashwotghimire.com.np",
-    ],
+    origin: allowedFrontendOrigins,
     credentials: true,
   }),
 );

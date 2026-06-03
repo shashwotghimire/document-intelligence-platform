@@ -159,6 +159,7 @@ PGPASSWORD=your_database_password
 PGSSLMODE=disable
 PGCHANNELBINDING=
 JWT_SECRET=replace-with-a-long-random-secret
+FRONTEND_ORIGIN=https://documentgpt.shashwotghimire.com.np
 EMAIL_USER=your-smtp-user
 EMAIL_PASS=your-smtp-password
 GEMINI_API_KEY=your-gemini-embedding-key
@@ -174,7 +175,7 @@ Notes:
 - Use `PGSSLMODE=require` if your database requires SSL.
 - `GEMINI_API_KEY` is used by the embedding service.
 - `GEMINI_API_KEY_PROMPT` is used by the answer/title generation service.
-- The current API CORS configuration allows the frontend at `http://localhost:5173`.
+- The API CORS configuration allows `http://localhost:5173`, `https://documentgpt.shashwotghimire.com.np`, and `https://www.documentgpt.shashwotghimire.com.np`. Set `FRONTEND_ORIGIN` to the public frontend URL used in verification emails.
 
 ### 3. Configure the web environment
 

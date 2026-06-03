@@ -15,6 +15,7 @@ import crypto from "crypto";
 import { sendEmail } from "../utils/sendMail";
 import { Op } from "sequelize";
 import { generateGravatarUrl } from "../services/gravatar.service";
+import { frontendOrigin } from "../config/frontend";
 
 const ensureGravatarUrl = async (user: User) => {
   if (user.gravatarUrl) return user.gravatarUrl;
@@ -36,7 +37,7 @@ export const registerUser = asyncHandler(
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
     const userCount = await User.count();
     const hashedPassword = await hashPassword(password);
-    const verificationUrl = `http://localhost:5173/verify-email?token=${emailVerificationToken}`;
+    const verificationUrl = `${frontendOrigin}/verify-email?token=${encodeURIComponent(emailVerificationToken)}`;
     const gravatarUrl = generateGravatarUrl(email);
     const user = await User.create({
       name,
@@ -46,15 +47,54 @@ export const registerUser = asyncHandler(
       role: userCount === 0 ? "admin" : "user",
       emailVerificationToken,
     });
-    await sendEmail(
+    sendEmail(
       user.email,
       "Verify your email",
       `
-       <h2>Email Verification</h2>
-      <p>Click below to verify your account:</p>
-      <a href="${verificationUrl}">Verify Email</a>
+      <!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Verify your email</title>
+        </head>
+        <body style="margin:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#172033;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:32px 16px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;border:1px solid #e4e9f2;box-shadow:0 18px 45px rgba(23,32,51,0.10);">
+                  <tr>
+                    <td style="padding:34px 32px 10px;">
+                      <p style="margin:0 0 18px;font-size:16px;line-height:1.65;color:#344054;">Hi ${user.name},</p>
+                      <p style="margin:0;font-size:16px;line-height:1.65;color:#344054;">Please confirm this email. Then you can sign in and use documentGPT.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:26px 32px 30px;">
+                      <a href="${verificationUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:15px 26px;border-radius:10px;">Verify email</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 32px 30px;">
+                      <div style="background:#f8fafc;border:1px solid #e4e9f2;border-radius:12px;padding:16px;">
+                        <p style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#667085;">Button not working? Paste this link into your browser.</p>
+                        <a href="${verificationUrl}" style="font-size:13px;line-height:1.6;color:#2563eb;word-break:break-all;">${verificationUrl}</a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:22px 32px;background:#fbfcfe;border-top:1px solid #e4e9f2;">
+                      <p style="margin:0;font-size:12px;line-height:1.6;color:#667085;">Did not make a documentGPT account? No action needed.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
        `,
-    );
+    ).catch((err) => console.error("Failed to send verification email:", err));
     res
       .status(201)
       .json(
