@@ -16,6 +16,7 @@ import { sendEmail } from "../utils/sendMail";
 import { Op } from "sequelize";
 import { generateGravatarUrl } from "../services/gravatar.service";
 import { frontendOrigin } from "../config/frontend";
+import { backendOrigin } from "../config/backend";
 
 const ensureGravatarUrl = async (user: User) => {
   if (user.gravatarUrl) return user.gravatarUrl;
@@ -119,6 +120,9 @@ export const loginUser = asyncHandler(
         "Invalid email or password",
       );
     }
+    if (!user.password) {
+      throw new ApiError(401, "GitHub login only", "GitHub login only");
+    }
 
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
@@ -156,6 +160,7 @@ export const loginUser = asyncHandler(
           isBlocked: user.isBlocked,
           isEmailVerified: user.isEmailVerified,
           gravatarUrl,
+          canChangePassword: Boolean(user.password),
         },
         token,
       }),
@@ -182,6 +187,7 @@ export const getUser = asyncHandler<AuthRequest>(
         isBlocked: user.isBlocked,
         isEmailVerified: user.isEmailVerified,
         gravatarUrl,
+        canChangePassword: Boolean(user.password),
       }),
     );
   },
@@ -197,13 +203,21 @@ export const updateProfile = asyncHandler<AuthRequest>(
     if (!user) {
       throw new ApiError(404, "User not found", "Invalid user");
     }
-
+    if (!user.password && (currentPassword || newPassword)) {
+      throw new ApiError(401, "GitHub login only", "GitHub login only");
+    }
     user.name = name;
 
     if (currentPassword && newPassword) {
+      const existingPassword = user.password;
+
+      if (!existingPassword) {
+        throw new ApiError(401, "GitHub login only", "GitHub login only");
+      }
+
       const isPasswordValid = await verifyPassword(
         currentPassword,
-        user.password,
+        existingPassword,
       );
 
       if (!isPasswordValid) {
@@ -229,6 +243,7 @@ export const updateProfile = asyncHandler<AuthRequest>(
         isBlocked: user.isBlocked,
         isEmailVerified: user.isEmailVerified,
         gravatarUrl,
+        canChangePassword: Boolean(user.password),
       }),
     );
   },
@@ -337,5 +352,105 @@ export const unblockUser = asyncHandler(
     return res
       .status(200)
       .json(new ApiResponse(true, "User unblocked successfully", null));
+  },
+);
+
+// github
+export const githubLogin = (req: Request, res: Response) => {
+  const params = new URLSearchParams({
+    client_id: process.env.GITHUB_CLIENT_ID!,
+    redirect_uri: `${backendOrigin}/api/auth/github/callback`,
+    scope: "read:user user:email",
+  });
+  res.redirect(`https://github.com/login/oauth/authorize?${params}`);
+};
+
+export const githubCallback = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { code } = req.query;
+    if (!code || typeof code !== "string") {
+      throw new ApiError(400, "Bad Request", "Invalid code");
+    }
+    const respose = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code,
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        redirect_uri: `${backendOrigin}/api/auth/github/callback`,
+      }),
+    });
+    const data = await respose.json();
+    if (!data.access_token) {
+      throw new ApiError(400, "Bad Request", "Invalid code");
+    }
+    const githubUser = await fetch("https://api.github.com/user", {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${data.access_token}`,
+      },
+    });
+    const githubUserData = await githubUser.json();
+
+    const githubEmailResponse = await fetch(
+      "https://api.github.com/user/emails",
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      },
+    );
+
+    const githubEmails = await githubEmailResponse.json();
+    const primaryEmail = githubEmails.find(
+      (email: { email: string; primary: boolean; verified: boolean }) =>
+        email.primary && email.verified,
+    )?.email;
+    if (!primaryEmail) {
+      throw new ApiError(
+        400,
+        "No verified email found from GitHub",
+        "Bad request",
+      );
+    }
+    let user = await User.findOne({ where: { email: primaryEmail } });
+    if (user) {
+      if (!user.githubId) {
+        user.githubId = githubUserData.id;
+      }
+      user.isEmailVerified = true;
+      user.emailVerificationToken = null;
+      if (githubUserData.avatar_url) {
+        user.gravatarUrl = githubUserData.avatar_url;
+      }
+      await user.save();
+    } else {
+      user = await User.create({
+        name: githubUserData.name || githubUserData.login,
+        email: primaryEmail,
+        password: null,
+        gravatarUrl: githubUserData.avatar_url,
+        role: "user",
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        githubId: githubUserData.id,
+      });
+    }
+    const token = signToken({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isBlocked: user.isBlocked,
+      isEmailVerified: user.isEmailVerified,
+    });
+    return res.redirect(`${frontendOrigin}/auth/callback?token=${token}`);
   },
 );

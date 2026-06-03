@@ -1,5 +1,7 @@
 import { Send } from "lucide-react";
 import Loading from "./Loading";
+import LoadingDots from "@/components/LoadingDots";
+import MetadataLoadingIndicator from "@/components/MetadataLoadingIndicator";
 import { Input } from "./ui/input";
 import {
   useGetMessages,
@@ -13,6 +15,7 @@ import { customComponents } from "./markdownComponents";
 interface ChatInterfaceProps {
   chatId?: string;
 }
+
 const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
   const [content, setContent] = React.useState("");
   const [pendingContent, setPendingContent] = useState("");
@@ -25,6 +28,7 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
     sendMessage,
     streamingMessage,
     isStreaming,
+    isMetadataLoading,
     error: isStreamingError,
   } = useGetStreamingMessages(chatId);
 
@@ -118,15 +122,16 @@ const ChatInterface = ({ chatId }: ChatInterfaceProps) => {
               <div className="flex items-center">
                 <div className="rounded-2xl p-2 text-sm mt-3 bg-background text-foreground max-w-5xl ">
                   {streamingMessage ? (
-                    <Markdown components={customComponents}>
-                      {streamingMessage}
-                    </Markdown>
+                    <>
+                      <Markdown components={customComponents}>
+                        {streamingMessage}
+                      </Markdown>
+                      {isMetadataLoading ? (
+                        <MetadataLoadingIndicator />
+                      ) : null}
+                    </>
                   ) : (
-                    <span className="flex items-center gap-1 py-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:0ms]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:150ms]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:300ms]" />
-                    </span>
+                    <LoadingDots />
                   )}
                 </div>
               </div>

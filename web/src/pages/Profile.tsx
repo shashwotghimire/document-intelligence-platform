@@ -121,8 +121,9 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({});
   const { mutate, isPending } = useUpdateProfile();
 
+  const canChangePassword = user.canChangePassword;
   const isPasswordChangeStarted = Boolean(
-    currentPassword || newPassword || confirmPassword,
+    canChangePassword && (currentPassword || newPassword || confirmPassword),
   );
   const hasProfileChanges =
     name.trim() !== user.name || isPasswordChangeStarted;
@@ -181,7 +182,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
       nextFieldErrors.name = "Name must be at least 2 characters.";
     }
 
-    if (isPasswordChangeStarted) {
+    if (canChangePassword && isPasswordChangeStarted) {
       if (!currentPassword) {
         nextFieldErrors.currentPassword = "Enter your current password.";
       }
@@ -216,7 +217,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
     mutate(
       {
         name: trimmedName,
-        ...(currentPassword && newPassword
+        ...(canChangePassword && currentPassword && newPassword
           ? { currentPassword, newPassword }
           : {}),
       },
@@ -318,7 +319,9 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                         Change password
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Leave these fields empty to keep your current password.
+                        {canChangePassword
+                          ? "Leave these fields empty to keep your current password."
+                          : "Password changes are unavailable for GitHub sign-in accounts."}
                       </p>
                     </div>
 
@@ -336,6 +339,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                             )}
                             autoComplete="current-password"
                             className="pr-10"
+                            disabled={!canChangePassword}
                             id="profile-current-password"
                             type={showCurrentPassword ? "text" : "password"}
                             value={currentPassword}
@@ -351,6 +355,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                                 : "Show current password"
                             }
                             className="absolute right-1 top-1/2 -translate-y-1/2"
+                            disabled={!canChangePassword}
                             onClick={() =>
                               setShowCurrentPassword((current) => !current)
                             }
@@ -362,7 +367,9 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                           </Button>
                         </div>
                         <FieldDescription>
-                          Required before setting a new password.
+                          {canChangePassword
+                            ? "Required before setting a new password."
+                            : "This account does not have a password to verify."}
                         </FieldDescription>
                         {fieldErrors.currentPassword ? (
                           <FieldError>{fieldErrors.currentPassword}</FieldError>
@@ -378,6 +385,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                             aria-invalid={Boolean(fieldErrors.newPassword)}
                             autoComplete="new-password"
                             className="pr-10"
+                            disabled={!canChangePassword}
                             id="profile-new-password"
                             type={showNewPassword ? "text" : "password"}
                             value={newPassword}
@@ -393,6 +401,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                                 : "Show new password"
                             }
                             className="absolute right-1 top-1/2 -translate-y-1/2"
+                            disabled={!canChangePassword}
                             onClick={() =>
                               setShowNewPassword((current) => !current)
                             }
@@ -431,8 +440,9 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                           </ul>
                         ) : (
                           <FieldDescription>
-                            Use at least {PASSWORD_MIN_LENGTH} characters with a
-                            letter and a number.
+                            {canChangePassword
+                              ? `Use at least ${PASSWORD_MIN_LENGTH} characters with a letter and a number.`
+                              : "Use GitHub to manage this account's sign-in method."}
                           </FieldDescription>
                         )}
                         {fieldErrors.newPassword ? (
@@ -449,6 +459,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                             aria-invalid={Boolean(fieldErrors.confirmPassword)}
                             autoComplete="new-password"
                             className="pr-10"
+                            disabled={!canChangePassword}
                             id="profile-confirm-password"
                             type={showConfirmPassword ? "text" : "password"}
                             value={confirmPassword}
@@ -464,6 +475,7 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                                 : "Show confirmed password"
                             }
                             className="absolute right-1 top-1/2 -translate-y-1/2"
+                            disabled={!canChangePassword}
                             onClick={() =>
                               setShowConfirmPassword((current) => !current)
                             }
@@ -479,9 +491,10 @@ function ProfileForm({ user }: { user: AuthenticatedUser }) {
                         ) : null}
                       </Field>
 
-                      {isPasswordChangeStarted ? (
+                      {canChangePassword && isPasswordChangeStarted ? (
                         <div>
                           <Button
+                            disabled={!canChangePassword}
                             onClick={clearPasswordFields}
                             type="button"
                             variant="ghost"

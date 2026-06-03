@@ -27,6 +27,7 @@ export interface AuthenticatedUser {
   isBlocked: boolean;
   isEmailVerified: boolean;
   gravatarUrl?: string;
+  canChangePassword: boolean;
 }
 
 export interface LoginResponse {

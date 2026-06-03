@@ -105,6 +105,7 @@ export const sendMessage = asyncHandler<AuthRequest>(
       fullResponse += chunk;
       res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
     }
+    res.write(`data: ${JSON.stringify({ metadataLoading: true })}\n\n`);
     const noInfoMessage =
       fullResponse.trim() === "I don't have enough information to answer that.";
 

@@ -1,4 +1,5 @@
-const DEFAULT_FRONTEND_ORIGIN = "https://documentgpt.shashwotghimire.com.np";
+// const DEFAULT_FRONTEND_ORIGIN = "https://documentgpt.shashwotghimire.com.np";
+const DEFAULT_FRONTEND_ORIGIN = "http://localhost:5173";
 
 const normalizeOrigin = (origin: string) => origin.trim().replace(/\/+$/, "");
 

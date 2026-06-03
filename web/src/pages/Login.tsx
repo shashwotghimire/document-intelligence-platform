@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/service/api/auth/auth.api";
+import { GitHubLoginButton } from "@/components/GitHubButton";
 
 interface ApiErrorResponse {
   message?: string;
@@ -119,6 +120,7 @@ const Login = () => {
                 >
                   {isPending ? "Signing in..." : "Sign in"}
                 </Button>
+                <GitHubLoginButton />
                 <p className="text-sm text-muted-foreground">
                   New to documentGPT?{" "}
                   <Link

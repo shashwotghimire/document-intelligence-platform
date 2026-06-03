@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { RegisterResponse } from "@/service/api/auth/auth.api";
 import { useRegister } from "@/service/api/auth/auth.api";
+import { GitHubSignupButton } from "@/components/GitHubButton";
 
 interface ApiErrorResponse {
   message?: string;
@@ -179,6 +180,7 @@ const Register = () => {
                 >
                   {isPending ? "Creating account..." : "Create account"}
                 </Button>
+                <GitHubSignupButton />
                 <p className="text-sm text-muted-foreground">
                   Already have a workspace?{" "}
                   <Link

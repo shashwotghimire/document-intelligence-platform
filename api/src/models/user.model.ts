@@ -17,12 +17,13 @@ export class User extends Model<
   declare id: CreationOptional<string>;
   declare name: string;
   declare email: string;
-  declare password: string;
+  declare password: null | string;
   declare gravatarUrl: CreationOptional<string | null>;
   declare role: CreationOptional<UserRole>;
   declare isBlocked: CreationOptional<boolean>;
   declare isEmailVerified: CreationOptional<boolean>;
   declare emailVerificationToken: CreationOptional<string | null>;
+  declare githubId: CreationOptional<string | null>;
 }
 
 User.init(
@@ -44,7 +45,7 @@ User.init(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     gravatarUrl: {
       type: DataTypes.STRING,
@@ -68,6 +69,11 @@ User.init(
     emailVerificationToken: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    githubId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     },
   },
   {

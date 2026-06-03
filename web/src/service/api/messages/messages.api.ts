@@ -54,6 +54,7 @@ export const useGetMessages = (chatId?: string) => {
 export const useGetStreamingMessages = (chatId?: string) => {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const sendMessage = async (content: string) => {
@@ -62,6 +63,7 @@ export const useGetStreamingMessages = (chatId?: string) => {
     }
     setIsStreaming(true);
     setStreamingMessage("");
+    setIsMetadataLoading(false);
     setError(null);
     try {
       const token = localStorage.getItem("accessToken");
@@ -91,7 +93,11 @@ export const useGetStreamingMessages = (chatId?: string) => {
           if (parsed.chunk) {
             setStreamingMessage((prev) => prev + parsed.chunk);
           }
+          if (parsed.metadataLoading) {
+            setIsMetadataLoading(true);
+          }
           if (parsed.done) {
+            setIsMetadataLoading(false);
             queryClient.invalidateQueries({
               queryKey: ["user", "messages", chatId],
             });
@@ -104,10 +110,17 @@ export const useGetStreamingMessages = (chatId?: string) => {
       setError("Something went wrong");
     } finally {
       setIsStreaming(false);
+      setIsMetadataLoading(false);
       setStreamingMessage("");
     }
   };
-  return { sendMessage, streamingMessage, isStreaming, error };
+  return {
+    sendMessage,
+    streamingMessage,
+    isStreaming,
+    isMetadataLoading,
+    error,
+  };
 };
 
 export const useSendMessage = (chatId?: string) => {

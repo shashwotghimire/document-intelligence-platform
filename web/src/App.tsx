@@ -13,6 +13,7 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
+import CallbackPage from "./pages/CallbackPage";
 
 const getPageTitle = (pathname: string) => {
   if (pathname === "/") return "documentGPT";
@@ -40,6 +41,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/auth/callback" element={<CallbackPage />} />
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

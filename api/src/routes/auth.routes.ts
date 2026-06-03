@@ -3,6 +3,8 @@ import {
   blockUser,
   getAllUsers,
   getUser,
+  githubCallback,
+  githubLogin,
   loginUser,
   registerUser,
   unblockUser,
@@ -321,5 +323,10 @@ router.patch(
  *         $ref: '#/components/responses/ForbiddenError'
  */
 router.get("/users", authMiddleware, rolesGuard("admin"), getAllUsers);
+
+// github
+
+router.get("/github", githubLogin);
+router.get("/github/callback", githubCallback);
 
 export default router;
