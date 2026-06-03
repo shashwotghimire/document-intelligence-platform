@@ -1,2 +1,2 @@
-export const backendOrigin = `http://localhost:8080`;
-export const backendOriginProduction = `https://shashwotghimire.tech`;
+// export const backendOrigin = `http://localhost:8080`;
+export const backendOrigin = `https://shashwotghimire.tech`;
