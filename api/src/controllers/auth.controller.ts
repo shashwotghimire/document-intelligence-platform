@@ -426,7 +426,7 @@ export const githubCallback = asyncHandler(
     let user = await User.findOne({ where: { email: primaryEmail } });
     if (user) {
       if (user.isBlocked) {
-        return res.redirect(`${frontendOrigin}/login`);
+        return res.redirect(`${frontendOrigin}/login?error=Account blocked`);
       }
       if (!user.githubId) {
         user.githubId = githubUserData.id;

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import type React from "react";
 import type { AxiosError } from "axios";
@@ -30,7 +30,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { mutate, isPending, isError, error } = useLogin();
-
+  const [searchParams] = useSearchParams();
+  const errorMessage = searchParams.get("error");
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -121,6 +122,9 @@ const Login = () => {
                   {isPending ? "Signing in..." : "Sign in"}
                 </Button>
                 <GitHubLoginButton />
+                {errorMessage ? (
+                  <p className="text-sm text-destructive">{errorMessage}</p>
+                ) : null}
                 <p className="text-sm text-muted-foreground">
                   New to documentGPT?{" "}
                   <Link
