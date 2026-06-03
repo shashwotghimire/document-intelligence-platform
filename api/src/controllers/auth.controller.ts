@@ -176,6 +176,9 @@ export const getUser = asyncHandler<AuthRequest>(
     if (!user) {
       throw new ApiError(404, "User not found", "Invalid user");
     }
+    if (user.isBlocked) {
+      throw new ApiError(403, "Account blocked", "User account is blocked");
+    }
     const gravatarUrl = await ensureGravatarUrl(user);
 
     res.status(200).json(
@@ -422,6 +425,9 @@ export const githubCallback = asyncHandler(
     }
     let user = await User.findOne({ where: { email: primaryEmail } });
     if (user) {
+      if (user.isBlocked) {
+        throw new ApiError(403, "Account blocked", "User account is blocked");
+      }
       if (!user.githubId) {
         user.githubId = githubUserData.id;
       }
