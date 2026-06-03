@@ -2,12 +2,12 @@ import nodemailer from "nodemailer";
 
 // Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: 'smtp.resend.com',
   auth: {
-    user: process.env.EMAIL_USER,
+    user: "resend",
     pass: process.env.EMAIL_PASS,
   },
-  port: 2525,
+  port: 2587,
   secure: false,
 });
 
