@@ -1,135 +1,357 @@
 # Document Intelligence Platform
 
-A full-stack document question-answering platform. Admin users upload documents into a shared knowledge base, the backend extracts and embeds the document text, and authenticated users chat with an assistant that answers from the retrieved document context.
+`documentGPT` is a full-stack, web-based AI document chat platform. It lets users register, verify email, sign in, and ask questions against a shared document knowledge base using Retrieval-Augmented Generation (RAG). Admin users manage the knowledge base and user access.
 
-## Project Overview
+The project is implemented as two TypeScript applications:
 
-The repository is split into two applications:
+- `api/`: Express backend for authentication, user/admin management, document ingestion, vector search, chat persistence, Server-Sent Events streaming, Swagger docs, and health checks.
+- `web/`: React + Vite frontend for landing, registration, login, email verification, chat, profile management, and admin operations.
 
-- `api/`: Express + TypeScript backend for authentication, user/admin management, document ingestion, vector search, chat persistence, and streaming LLM responses.
-- `web/`: React + Vite frontend for registration/login, email verification, chat, profile editing, and admin document/user management.
+## Implemented Features
 
-The first registered user becomes an `admin`; later users are assigned the `user` role. Admins can upload supported documents, view platform statistics, delete uploaded documents, and block or unblock users. Regular users can create chats, ask questions, and receive streamed markdown responses grounded in the indexed document chunks.
+- Public landing page with product overview, screenshots, source/API links, and auth entry points.
+- Email/password registration with duplicate-email protection.
+- Email verification before login or protected API access.
+- Secure login with JWTs that expire after 7 days.
+- GitHub OAuth login/signup callback flow.
+- First-user admin bootstrap.
+- Role-based routing and API authorization for `admin` and `user`.
+- Blocked-account enforcement in login, `/api/auth/me`, and protected middleware.
+- Profile editing for display name and password changes.
+- Gravatar avatar generation and account menu with sign out.
+- Admin dashboard with total documents, chunks, users, and storage usage.
+- Admin-only upload flow with file selection, preview, processing status, and error state.
+- Supported knowledge-base file types: `.pdf`, `.docx`, `.txt`, `.csv`.
+- S3 storage for original uploaded files and signed preview URLs in the admin table.
+- Document deletion that removes both the S3 object and database chunks.
+- Admin document table with file metadata, uploader data, status, signed file link, and delete confirmation.
+- Admin users table with pagination, email status, role display, block, and unblock.
+- Admin activity logs for document uploads, document deletion, and message sends.
+- User chat workspace with sidebar, recent chats, create chat, rename chat, delete chat, and infinite chat loading.
+- User-scoped chat and message access so users can only read their own chats/messages.
+- Streaming AI answers over Server-Sent Events.
+- Markdown rendering for assistant responses.
+- Referenced document metadata shown under grounded AI messages.
+- Three generated follow-up questions stored with each AI answer when useful.
+- Automatic short chat title generation after the first user message.
+- Swagger API documentation at `/api-docs` and raw OpenAPI JSON at `/api-docs.json`.
+- Health endpoint at `/api/health`.
+- Dockerfiles for API and web builds, plus a root `docker-compose.yml` for the API service.
+- Vercel SPA rewrite config for the web app.
 
-## Tech Stack
+## Screenshots
 
-### Backend
+### Admin Dashboard
 
-- Node.js, Express 5, TypeScript
-- Sequelize ORM with PostgreSQL
-- `pgvector` for vector embeddings and similarity search
-- Google Gemini via `@google/genai`
-  - `gemini-embedding-001` for embeddings
-  - `gemini-2.5-flash-lite` for streamed answers
-  - `gemini-2.5-flash` for generated chat titles
-- AWS S3 for original document storage
-- Multer memory uploads
-- `pdf-parse`, `mammoth`, and `csv-parse` for document text extraction
-- LangChain `RecursiveCharacterTextSplitter` for chunking
-- JWT authentication, bcrypt password hashing, Zod validation
-- Nodemailer for email verification
+![Admin dashboard showing uploaded document stats and activity logs](web/public/dashbaord.png)
 
-### Frontend
+### Document Chat
 
-- React 19, TypeScript, Vite
-- React Router
-- TanStack Query
-- Axios and `fetch` for API/SSE calls
-- Tailwind CSS 4
-- shadcn/Radix-style UI components
-- Lucide icons
-- React Markdown for assistant responses
+![Chat interface showing a document-grounded conversation](web/public/chats.png)
 
-## Features Implemented
+## Technology Stack
 
-- User registration, login, and JWT-protected routes
-- Email verification flow through a mailed verification link
-- First-user admin bootstrap
-- Role-based access control for admin routes
-- Profile editing with display name and password updates
-- Gravatar-based user avatars
-- Admin dashboard with document, chunk, user, and storage statistics
-- Admin document upload for `.pdf`, `.docx`, `.txt`, and `.csv` files
-- File preview before upload from the admin UI
-- Document ingestion into S3, PostgreSQL metadata, and pgvector chunks
-- Admin document table with uploader metadata and delete support
-- Admin user table with pagination and block/unblock actions
-- Chat creation, renaming, deletion, and infinite-scroll chat history sidebar
-- User-scoped chat/message access
-- Streaming assistant responses over Server-Sent Events
-- Markdown rendering for assistant answers
-- Automatic short chat title generation after the first user message
-- Health endpoint at `/api/health`
-
-## RAG Implementation
-
-The Retrieval-Augmented Generation flow is implemented in the API:
-
-1. An admin uploads a document through `POST /api/uploads`.
-2. The file is uploaded to S3 and its text is extracted based on file type:
-   - PDF: `pdf-parse`
-   - DOCX: `mammoth`
-   - TXT: UTF-8 buffer text
-   - CSV: parsed rows converted into readable key/value text
-3. Extracted text is split with LangChain's `RecursiveCharacterTextSplitter` using a chunk size of `500` and overlap of `200`.
-4. Each chunk is embedded with Gemini `gemini-embedding-001`.
-5. Document metadata is stored in `documents`; chunks and 3072-dimensional vectors are stored in `document_chunks.vector_embedding`.
-6. When a user sends a chat message, the message is embedded with the same Gemini embedding model.
-7. PostgreSQL/pgvector performs nearest-neighbor search using:
-
-   ```sql
-   ORDER BY "vector_embedding" <-> :embedding::vector
-   LIMIT 5
-   ```
-
-8. The top 5 chunk texts are inserted into a strict grounding prompt that instructs the LLM to answer only from retrieved context.
-9. The response is streamed back to the frontend as SSE chunks and saved as an `ai` message once complete.
-
-This means answers are generated from the indexed document knowledge base rather than from the model's general knowledge. If retrieved context is missing or irrelevant, the prompt instructs the assistant to say it does not have enough information.
+| Frontend | Backend |
+| --- | --- |
+| TypeScript | TypeScript |
+| React 19, Vite, React Router | Node.js, Express 5 |
+| TanStack Query, Axios, `fetch` streaming | Sequelize ORM, PostgreSQL, `pgvector` |
+| Tailwind CSS 4, shadcn/Radix-style components, Lucide icons | JWT, bcrypt, email verification,GitHub OAuth |
+| React Markdown | Google Gemini via `@google/genai` |
+| `localStorage` token persistence | Gemini embeddings, pgvector retrieval, Gemini streamed answers |
+| Zustand installed, no active store currently used | AWS S3, Multer, `pdf-parse`, `mammoth`, `csv-parse` |
+| Vercel deployment | Zod, Helmet, CORS allowlist, rate limiting, Swagger |
 
 ## Repository Structure
 
 ```text
 .
 |-- api/
-|   |-- migrations/              # Sequelize migrations
+|   |-- migrations/              # Sequelize migrations for users, docs, chunks, chats, messages, logs, OAuth-fields
 |   |-- src/
-|   |   |-- controllers/          # Request handlers
-|   |   |-- middlewares/          # Auth, roles, multer, validation, errors
-|   |   |-- models/               # Sequelize models and associations
-|   |   |-- routes/               # API route definitions
-|   |   |-- services/             # S3, document parsing, chunking, embeddings, LLM
-|   |   |-- utils/                # API responses/errors, JWT, mail, prompts
-|   |   |-- app.ts                # Express app wiring
-|   |   |-- db.ts                 # Sequelize and pgvector setup
-|   |   `-- server.ts             # API entrypoint
-|   `-- package.json
+|   |   |-- config/              # Swagger, frontend/backend origins, Sequelize CLI config
+|   |   |-- controllers/         # Request handlers
+|   |   |-- middlewares/         # Auth, roles, multer, validation, error handling, rate limits
+|   |   |-- models/              # Sequelize models and associations
+|   |   |-- routes/              # Express route definitions with Swagger annotations
+|   |   |-- services/            # RAG, S3, parsing, chunking, embeddings, LLM, logging, Gravatar
+|   |   |-- utils/               # API responses/errors, JWT, mail, prompts, parsers
+|   |   |-- app.ts               # Express app wiring
+|   |   |-- db.ts                # Sequelize and pgvector setup
+|   |   `-- server.ts            # API entrypoint
+|   |-- .env.sample              # API environment example
+|   |-- Dockerfile
+|   |-- package.json
+|   `-- tsconfig.json
 |-- web/
-|   |-- public/                   # Static assets
+|   |-- public/                  # Static assets and screenshots
 |   |-- src/
-|   |   |-- components/           # Shared UI and app components
-|   |   |-- pages/                # Route pages
-|   |   |-- service/              # Axios client and API hooks
-|   |   `-- main.tsx              # React entrypoint
-|   `-- package.json
+|   |   |-- components/          # Shared app and UI components
+|   |   |-- hooks/               # Frontend hooks
+|   |   |-- lib/                 # Utility functions
+|   |   |-- pages/               # Route pages
+|   |   |-- service/             # Axios client and API hooks
+|   |   |-- App.tsx              # Frontend route definitions
+|   |   |-- main.tsx             # React providers and app bootstrap
+|   |   `-- index.css            # Tailwind/theme styles
+|   |-- Dockerfile
+|   |-- nginx.conf
+|   |-- vercel.json
+|   |-- package.json
+|   `-- vite.config.ts
+|-- docker-compose.yml
+|-- PRODUCT.md
+|-- CLAUDE.md
 `-- README.md
 ```
 
+## User Workflows
+
+### First admin setup
+
+1. Start PostgreSQL, the API, and the frontend.
+2. Open `http://localhost:5173/register`.
+3. Register the first account.
+4. Verify the account using the emailed link.
+5. Log in. The first account is routed as an admin.
+6. Open `/admin/dashboard` to upload documents and manage the platform.
+
+### Admin document upload
+
+1. Admin opens `/admin/dashboard`.
+2. Admin clicks `Upload File`.
+3. Frontend opens a file picker and then a confirmation modal.
+4. Admin can preview the selected file using `URL.createObjectURL`.
+5. Frontend sends `multipart/form-data` to `POST /api/uploads`.
+6. Backend stores the original file in S3.
+7. Backend extracts text, chunks it, embeds each chunk, and stores metadata/chunks in PostgreSQL.
+8. Backend marks the document as `Processed`.
+9. Frontend refreshes dashboard stats, document table, and activity logs.
+
+### User chat
+
+1. User opens `/chat`.
+2. If no `chatId` exists, frontend creates a chat and redirects to `/chat/:chatId`.
+3. User sends a question from the chat input.
+4. Frontend posts the message through `fetch()` to support streaming.
+5. Backend saves the user message.
+6. Backend embeds the query and retrieves nearest document chunks.
+7. Backend streams Gemini output as Server-Sent Events.
+8. Frontend renders markdown chunks as they arrive.
+9. Backend stores the final AI message, referenced documents, and follow-up questions.
+10. Frontend refreshes persisted message history and chat title/sidebar data.
+
+### Admin user management
+
+1. Admin opens `/admin/users`.
+2. Frontend requests paginated users from `GET /api/auth/users`.
+3. Admin can block or unblock each user.
+4. Blocked users are rejected by login and by protected middleware.
+
+### Profile and password update
+
+1. User opens the account menu and selects `Edit profile`.
+2. User can update display name.
+3. Email/password users can update passwords by providing current password, new password, and confirmation.
+4. Backend validates current password and hashes the new password.
+5. GitHub-only users can update profile name but cannot change password in this app.
+
+## RAG Implementation
+
+The RAG pipeline is implemented in `api/src/controllers/uploads.controller.ts`, `api/src/controllers/messages.controller.ts`, and supporting services under `api/src/services/`.
+
+### Ingestion pipeline
+
+1. Admin uploads a file to `POST /api/uploads`.
+2. Multer stores the file in memory and enforces:
+   - Allowed extensions: `.pdf`, `.docx`, `.txt`, `.csv`
+   - Maximum file size: 50 MB
+3. Backend uploads the original file to S3 with a generated key under `uploads/`.
+4. Backend extracts text by file type:
+   - PDF: `pdf-parse`
+   - DOCX: `mammoth.extractRawText`
+   - TXT: UTF-8 buffer text
+   - CSV: `csv-parse/sync` with headers, converted to readable `key: value` text rows
+5. Backend splits extracted text with LangChain `RecursiveCharacterTextSplitter`:
+   - `chunkSize: 500`
+   - `chunkOverlap: 200`
+6. Backend embeds every chunk with Gemini `gemini-embedding-001`.
+7. Backend stores:
+   - Document metadata in `documents`
+   - Chunk text and `vector(3072)` embeddings in `document_chunks`
+8. Backend commits the document and chunks in a Sequelize transaction.
+9. Backend records a `file_uploaded` log event.
+10. If processing fails after S3 upload, backend attempts to delete the uploaded S3 object.
+
+### Retrieval and answer pipeline
+
+1. User posts a message to `POST /api/messages/:chatId`.
+2. Backend verifies the chat belongs to the current user.
+3. Backend saves the user message in `chat_messages`.
+4. Backend embeds the user query with `gemini-embedding-001`.
+5. Backend performs pgvector nearest-neighbor search across indexed chunks:
+
+   ```sql
+   SELECT
+     d."id" AS "documentId",
+     d."filename" AS "documentName",
+     d."file_type" AS "documentType",
+     dc."id" AS "chunkId",
+     dc."chunk_text" AS "chunkText",
+     dc."chunk_index" AS "chunkIndex",
+     dc."vector_embedding" <-> :embedding::vector AS distance
+   FROM document_chunks dc
+   JOIN documents d ON d.id = dc."document_id"
+   ORDER BY dc."vector_embedding" <-> :embedding::vector
+   LIMIT 15
+   ```
+
+6. Backend builds a context block from the retrieved chunks.
+7. Backend sends a strict grounding prompt to Gemini `gemini-2.5-flash`.
+8. Backend streams each text chunk to the browser as SSE:
+
+   ```text
+   data: {"chunk":"..."}
+
+   data: {"metadataLoading":true}
+
+   data: {"done":true}
+   ```
+
+9. Backend stores the completed AI response.
+10. If the answer is not the fallback message, backend stores referenced document metadata from the retrieved chunks.
+11. Backend generates exactly three follow-up questions when useful and stores them on the AI message.
+12. For the first message in a chat, backend generates a short chat title of up to 6 words.
+13. Backend increments the chat message count and writes a `message_sent` log.
+
+### Grounding behavior
+
+The prompt instructs the model to:
+
+- Use only retrieved context.
+- Avoid outside knowledge.
+- State what is missing if context is partial.
+- Return exactly `I don't have enough information to answer that.` when retrieved context is irrelevant.
+- Use markdown because responses are rendered by `react-markdown`.
+
+## Database Schema
+
+Migrations live in `api/migrations/` and use `sequelize-cli`.
+
+The initial migration enables:
+
+- `pgcrypto` for `gen_random_uuid()`
+- `vector` for pgvector embeddings
+
+### `users`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key, generated by PostgreSQL |
+| `name` | string | Required |
+| `email` | string | Required, unique |
+| `password` | string, nullable | Bcrypt hash for email/password users; null for GitHub-only users |
+| `gravatar_url` | string, nullable | Gravatar URL or GitHub avatar URL |
+| `role` | enum `user`, `admin` | Defaults to `user`; first registered user becomes `admin` |
+| `is_blocked` | boolean | Defaults to `false` |
+| `is_email_verified` | boolean | Defaults to `false`; GitHub users are marked verified |
+| `email_verification_token` | string, nullable | Cleared after successful email verification |
+| `github_id` | string, nullable | Added by GitHub OAuth migration |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+### `documents`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `filename` | string | Original uploaded filename |
+| `file_type` | enum `pdf`, `docx`, `txt`, `csv` | Supported source type |
+| `file_path` | string | S3 object key |
+| `file_size` | integer | Uploaded size in bytes |
+| `file_processing_status` | enum `Processing`, `Processed`, `Failed` | Current processing state |
+| `uploaded_by` | UUID | FK to `users.id` |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+### `document_chunks`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `document_id` | UUID | FK to `documents.id`, cascade delete |
+| `chunk_text` | text | Extracted document segment |
+| `chunk_index` | integer | Original chunk order within the document |
+| `vector_embedding` | `vector(3072)` | Gemini embedding for pgvector search |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+### `chats`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `title` | string | Defaults to `New chat`; generated after first message or user-renamed |
+| `user_id` | UUID | FK to `users.id`, cascade delete |
+| `count` | integer | Number of user messages sent in the chat |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+### `chat_messages`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `chat_id` | UUID | FK to `chats.id`, cascade delete |
+| `content` | text | User or AI message content |
+| `message_role` | enum `user`, `ai` | Message author |
+| `referenced_documents` | JSONB, nullable | Documents used for grounded AI answer |
+| `follow_up_questions` | JSONB, nullable | Generated suggested next questions |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+### `logs`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `user_id` | UUID | FK to `users.id`, cascade delete |
+| `action` | string | Event name such as `file_uploaded`, `file_deleted`, `message_sent` |
+| `data` | text | Human-readable event data |
+| `created_at`, `updated_at` | timestamp | Sequelize timestamps |
+
+Associations:
+
+- `User hasMany Document`
+- `User hasMany Chat`
+- `User hasMany Logs`
+- `Document belongsTo User as uploader`
+- `Document hasMany DocumentChunk`
+- `Chat belongsTo User`
+- `Chat hasMany Messages`
+- `Messages belongsTo Chat`
+- `Logs belongsTo User as user`
+
+## API Documentation
+
+Swagger UI is served by the API:
+
+- Production: `https://shashwotghimire.tech/api-docs`
+- UI: `http://localhost:8080/api-docs`
+- OpenAPI JSON: `http://localhost:8080/api-docs.json`
+
+All endpoint request/response details are documented in Swagger. Application routes are mounted under `/api`.
+
 ## Prerequisites
 
-- Node.js 20+ recommended
+- Node.js 20+
 - npm
-- PostgreSQL with the `pgcrypto` and `vector` extensions available
-- AWS S3 bucket and credentials
-- Google Gemini API keys
-- SMTP credentials for verification emails
+- PostgreSQL with permission to create the `pgcrypto` and `vector` extensions
+- AWS S3 bucket and access credentials
+- Google Gemini API key(s)
+- SMTP credentials for email verification
+- GitHub OAuth app credentials
 
 ## Local Setup
 
-### 1. Clone and install dependencies
+### 1. Install dependencies
 
 ```bash
-git clone <repo-url>
 cd document-intelligence-platform
 
 cd api
@@ -139,12 +361,12 @@ cd ../web
 npm install
 ```
 
-### 2. Configure the API environment
+### 2. Configure the API
 
-From the repository root, create `api/.env` from `api/.env.sample`:
+Create `api/.env` from the sample:
 
 ```bash
-cd api
+cd ../api
 cp .env.sample .env
 ```
 
@@ -153,108 +375,112 @@ Fill in:
 ```env
 PORT=8080
 PGHOST=localhost
-PGDATABASE=your_database
-PGUSER=your_database_user
+PGDATABASE=documentgpt
+PGUSER=postgres
 PGPASSWORD=your_database_password
 PGSSLMODE=disable
 PGCHANNELBINDING=
+
 JWT_SECRET=replace-with-a-long-random-secret
-FRONTEND_ORIGIN=https://documentgpt.shashwotghimire.com.np
-EMAIL_USER=your-smtp-user
-EMAIL_PASS=your-smtp-password
+
+FRONTEND_ORIGIN=http://localhost:5173
+
+EMAIL_USER=your-from-address@example.com
+EMAIL_PASS=your-resend-smtp-password
+
 GEMINI_API_KEY=your-gemini-embedding-key
 GEMINI_API_KEY_PROMPT=your-gemini-generation-key
+
 AWS_REGION=your-aws-region
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_ACCESS_KEY_SECRET=your-aws-secret-access-key
 AWS_S3_BUCKET=your-s3-bucket
+
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 ```
 
 Notes:
 
-- Use `PGSSLMODE=require` if your database requires SSL.
+- Use `PGSSLMODE=require` if your PostgreSQL provider requires SSL.
 - `GEMINI_API_KEY` is used by the embedding service.
-- `GEMINI_API_KEY_PROMPT` is used by the answer/title generation service.
-- The API CORS configuration allows `http://localhost:5173`, `https://documentgpt.shashwotghimire.com.np`, and `https://www.documentgpt.shashwotghimire.com.np`. Set `FRONTEND_ORIGIN` to the public frontend URL used in verification emails.
+- `GEMINI_API_KEY_PROMPT` is used by the answer, follow-up question, and chat title generation service.
+- `FRONTEND_ORIGIN` is used for verification email links and OAuth redirects.
+- CORS allows `http://localhost:5173`, `https://documentgpt.shashwotghimire.com.np`, `https://www.documentgpt.shashwotghimire.com.np`, and any configured `FRONTEND_ORIGIN`.
+- Email is configured for Resend SMTP in `api/src/utils/sendMail.ts` with host `smtp.resend.com`, user `resend`, port `2587`, and `secure: false`.
+- For local GitHub OAuth, update `api/src/config/backend.ts` to your local backend origin.
 
-### 3. Configure the web environment
+### 3. Configure the web app
 
-From the repository root, create `web/.env`:
+Create `web/.env`:
 
 ```bash
-cd web
+cd ../web
 touch .env
 ```
+
+Add:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
-### 4. Prepare the database
+### 4. Prepare PostgreSQL
 
-Create the PostgreSQL database, then run migrations from the API folder:
+Create a local PostgreSQL database matching `PGDATABASE`. Then run migrations from `api/`:
 
 ```bash
-cd api
+cd ../api
 npx sequelize-cli db:migrate --config src/config/config.js --migrations-path migrations
 ```
 
-The initial migration creates:
-
-- `users`
-- `documents`
-- `document_chunks` with `vector(3072)`
-- `chats`
-- `chat_messages`
-
-It also enables the `pgcrypto` and `vector` PostgreSQL extensions.
-
-### Migration commands
-
-Run these commands from the `api/` directory. This project keeps Sequelize config in `src/config/config.js` and migrations in `migrations/`, so include both flags when using `sequelize-cli`.
+### 5. Start the API
 
 ```bash
-# Check migration status
-npx sequelize-cli db:migrate:status --config src/config/config.js --migrations-path migrations
-
-# Apply all pending migrations
-npx sequelize-cli db:migrate --config src/config/config.js --migrations-path migrations
-
-# Roll back the most recent migration
-npx sequelize-cli db:migrate:undo --config src/config/config.js --migrations-path migrations
-
-# Roll back all migrations
-npx sequelize-cli db:migrate:undo:all --config src/config/config.js --migrations-path migrations
-
-# Generate a new migration file
-npx sequelize-cli migration:generate --name your-migration-name --migrations-path migrations
-```
-
-For a fresh local database, run `db:migrate` before starting the API. For an existing database, use `db:migrate:status` first to confirm which migrations are already applied.
-
-### 5. Run the backend
-
-```bash
-cd api
 npm run dev
 ```
 
-By default, the API runs on `http://localhost:8080`.
+The API listens on `http://localhost:8080` by default.
 
-### 6. Run the frontend
+### 6. Start the frontend
 
-In a second terminal:
+Open a second terminal:
 
 ```bash
 cd web
 npm run dev
 ```
 
-By default, Vite runs on `http://localhost:5173`.
+The Vite dev server runs at `http://localhost:5173` by default.
 
-### 7. Create the first admin user
+### 7. Create the admin account
 
-Open `http://localhost:5173/register` and register a user. The first user in the database is assigned the `admin` role automatically. Verify the account using the email verification link, then sign in.
+1. Open `http://localhost:5173/register`.
+2. Register the first user.
+3. Verify the account from the email link.
+4. Log in.
+5. You should land in the admin experience.
+
+## Migration Commands
+
+Run these from `api/`:
+
+```bash
+# Check status
+npx sequelize-cli db:migrate:status --config src/config/config.js --migrations-path migrations
+
+# Apply pending migrations
+npx sequelize-cli db:migrate --config src/config/config.js --migrations-path migrations
+
+# Roll back the latest migration
+npx sequelize-cli db:migrate:undo --config src/config/config.js --migrations-path migrations
+
+# Roll back all migrations
+npx sequelize-cli db:migrate:undo:all --config src/config/config.js --migrations-path migrations
+
+# Generate a migration
+npx sequelize-cli migration:generate --name your-migration-name --migrations-path migrations
+```
 
 ## Useful Scripts
 
@@ -262,74 +488,91 @@ Open `http://localhost:5173/register` and register a user. The first user in the
 
 ```bash
 cd api
-npm run dev      # start TypeScript dev server with tsx watch
-npm run build    # compile TypeScript
-npm run start    # run compiled dist/server.js
+npm run dev      # Start TypeScript dev server with tsx watch
+npm run build    # Compile TypeScript to dist/
+npm run start    # Run dist/server.js
+npm test         # Placeholder; no automated tests are implemented
 ```
 
 ### Web
 
 ```bash
 cd web
-npm run dev      # start Vite dev server
-npm run build    # TypeScript build + Vite production build
-npm run lint     # run ESLint
-npm run preview  # preview production build
+npm run dev      # Start Vite dev server
+npm run build    # TypeScript build plus Vite production build
+npm run lint     # Run ESLint
+npm run preview  # Preview production build
 ```
 
-## API Surface
+## Deployment Notes
 
-All API routes are mounted under `/api`.
+### Production URLs
 
-### Auth
+- Frontend: deployed on Vercel at `https://documentgpt.shashwotghimire.com.np`
+- API: hosted on a DigitalOcean Linux VPS at `https://shashwotghimire.tech`
+- Swagger API docs: `https://shashwotghimire.tech/api-docs`
 
-- `POST /auth/register` - register a new user
-- `POST /auth/login` - login and receive a JWT
-- `GET /auth/me` - fetch current authenticated user
-- `PATCH /auth/profile` - update name and optionally password
-- `GET /auth/verify?token=...` - verify email address
-- `GET /auth/users` - admin-only paginated user list
-- `PATCH /auth/block/:userId` - admin-only block user
-- `PATCH /auth/unblock/:userId` - admin-only unblock user
+### Docker
 
-### Uploads and Admin Stats
+The API and web app each include a Dockerfile.
 
-- `POST /uploads` - admin-only document upload
-- `GET /uploads/stats` - admin-only aggregate stats
-- `GET /uploads/tableStats` - admin-only document table data
-- `DELETE /uploads/:documentId` - admin-only delete document and chunks
-
-### Chats and Messages
-
-- `GET /chats` - paginated current-user chats
-- `POST /chats` - create a chat
-- `GET /chats/:chatId` - fetch one current-user chat
-- `PATCH /chats/:chatId` - rename a chat
-- `DELETE /chats/:chatId` - delete a chat
-- `GET /messages/:chatId` - fetch messages for a current-user chat
-- `POST /messages/:chatId` - send a message and stream the grounded answer
-
-### Health
-
-- `GET /health` - health check
-
-## Document Upload Constraints
-
-- Supported extensions: `.pdf`, `.docx`, `.txt`, `.csv`
-- Maximum upload size: 50 MB
-- Uploads are processed in memory before being stored in S3 and indexed
-- Document deletion removes both the S3 object and stored database chunks
-
-## Build Verification
-
-Run both builds before shipping changes:
+`api/Dockerfile` builds TypeScript in a Node 20 Alpine builder image, installs production dependencies in the final image, exposes port `8080`, and runs:
 
 ```bash
-cd api
-npm run build
-
-cd ../web
-npm run build
+node dist/server.js
 ```
 
-There is currently no implemented automated test suite; the API `test` script is still a placeholder.
+`web/Dockerfile` builds the Vite app with `VITE_API_BASE_URL` as a build arg, copies `dist/` into Nginx, and serves on port `80`.
+
+Example web image build:
+
+```bash
+cd web
+docker build --build-arg VITE_API_BASE_URL=https://your-api.example.com/api -t documentgpt-web .
+```
+
+The root `docker-compose.yml` currently defines the API service only:
+
+```bash
+docker compose up --build api
+```
+
+The web service is present but commented out. Uncomment and set the `VITE_API_BASE_URL` build arg if you want to run both through compose.
+
+### API Deployment
+
+API deployment is automated with GitHub Actions in `.github/workflows/deploy.yml`.
+
+The workflow runs on every push to `main`:
+
+1. Checks out the repository.
+2. Logs in to GitHub Container Registry.
+3. Builds the API Docker image from `./api`.
+4. Pushes the image to GHCR as:
+   - `ghcr.io/<repository_owner>/documentgpt:latest`
+   - `ghcr.io/<repository_owner>/documentgpt:<commit_sha>`
+5. Connects to the DigitalOcean VPS over SSH using repository secrets.
+6. Pulls the latest API image.
+7. Stops and removes the existing `documentgpt-api` container if it exists.
+8. Starts a new `documentgpt-api` container with:
+   - `--restart always`
+   - host port `8080` mapped to container port `8080`
+   - environment variables loaded from the VPS `.env` file
+
+Required GitHub repository secrets:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+
+### Vercel
+
+The frontend is deployed on Vercel. `web/vercel.json` rewrites all paths to `/`, which supports React Router browser routes on Vercel:
+
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+}
+```
+
+Set `VITE_API_BASE_URL=https://shashwotghimire.tech/api` in the Vercel project environment.

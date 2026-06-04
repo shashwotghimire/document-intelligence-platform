@@ -181,7 +181,7 @@ const Register = () => {
                 </Button>
                 <GitHubSignupButton />
                 <p className="text-sm text-muted-foreground">
-                  Already have a workspace?{" "}
+                  Already have an account?{" "}
                   <Link
                     to="/login"
                     className="font-medium text-foreground underline-offset-4 hover:underline"
