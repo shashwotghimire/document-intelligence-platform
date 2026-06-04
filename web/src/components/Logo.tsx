@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 
-export const Logo = () => {
+export const Logo = ({ to = "/chat" }: { to?: string }) => {
   return (
-    <Link to="/chat" aria-label="Go to chat" className="flex items-center gap-3">
+    <Link
+      to={to}
+      aria-label={to === "/" ? "Go to homepage" : "Go to chat"}
+      className="flex items-center gap-3"
+    >
       <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-lime-400">
         <div className="h-3 w-3 rounded-full bg-black" />
       </div>

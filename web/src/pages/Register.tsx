@@ -69,25 +69,24 @@ const Register = () => {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-2 bg-background">
-      <div className="relative hidden lg:flex overflow-hidden">
+      <div className="relative hidden overflow-hidden lg:block">
         <img
           src="/auth-visual.jpg"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute left-10 top-10">
-          <Logo />
+          <Logo to="/" />
         </div>
       </div>
 
       <div className="flex justify-center lg:items-center overflow-y-auto py-10 px-6">
-        <div className="flex w-full max-w-md flex-col gap-6">
+        <div className="flex w-full max-w-md flex-col gap-4">
           <div className="flex flex-col gap-2">
             <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-              Build your document workspace
+              Create your account
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Create an account to upload, organize, and ask better questions of
-              every file.
+            <p className="mt-1 mb-0 text-lg text-muted-foreground">
+              Upload a document. Ask a question. Get the answer fast.
             </p>
           </div>
 
@@ -156,7 +155,7 @@ const Register = () => {
                     />
                   </div>
 
-                  <p className="text-sm text-muted-foreground">
+                  <p className="mt-1 mb-1 text-sm text-muted-foreground">
                     By creating an account, you agree to the terms and privacy
                     policy.
                   </p>

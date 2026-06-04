@@ -22,7 +22,7 @@ const getLoginErrorMessage = (error: unknown) => {
   return (
     axiosError.response?.data?.message ||
     axiosError.response?.data?.error ||
-    "Unable to sign in. Please try again."
+    "We could not log you in. Check your details and try again."
   );
 };
 
@@ -51,14 +51,14 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-2">
-      <div className="relative hidden overflow-hidden lg:flex">
+      <div className="relative hidden overflow-hidden lg:block">
         <img
           src="/auth-visual.jpg"
           alt="Documents arranged on a workspace"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute left-10 top-10">
-          <Logo />
+          <Logo to="/" />
         </div>
       </div>
 
@@ -66,11 +66,10 @@ const Login = () => {
         <div className="flex w-full max-w-md flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-              Return to your workspace
+              Welcome back
             </h1>
             <p className="text-lg text-muted-foreground">
-              Sign in to continue reviewing, searching, and chatting with your
-              documents.
+              Pick up where you left off.
             </p>
           </div>
 
@@ -99,7 +98,7 @@ const Login = () => {
                       name="password"
                       type="password"
                       autoComplete="current-password"
-                      placeholder="Enter your password"
+                      placeholder="Type your password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       required
@@ -119,19 +118,19 @@ const Login = () => {
                   disabled={isPending}
                   className="w-full cursor-pointer transition-colors hover:bg-neutral-600"
                 >
-                  {isPending ? "Signing in..." : "Sign in"}
+                  {isPending ? "Logging in..." : "Log in"}
                 </Button>
                 <GitHubLoginButton />
                 {errorMessage ? (
                   <p className="text-sm text-destructive">{errorMessage}</p>
                 ) : null}
                 <p className="text-sm text-muted-foreground">
-                  New to documentGPT?{" "}
+                  No account yet?{" "}
                   <Link
                     to="/register"
                     className="font-medium text-foreground underline-offset-4 hover:underline"
                   >
-                    Create account
+                    Make one
                   </Link>
                 </p>
               </CardFooter>
