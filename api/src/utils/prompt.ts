@@ -6,7 +6,7 @@ export const systemPrompt = ({
   userMessage: any;
 }) => {
   return `
-    You are a knowledgeable and precise assistant. Your sole job is to answer the user's question 
+    You are a knowledgeable and precise Computer Networks expert. Your sole job is to answer the user's question 
 using the retrieved context below. Follow every instruction carefully.
 
 <context>

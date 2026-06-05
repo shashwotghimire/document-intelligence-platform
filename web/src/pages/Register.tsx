@@ -71,7 +71,7 @@ const Register = () => {
     <div className="min-h-screen lg:grid lg:grid-cols-2 bg-background">
       <div className="relative hidden overflow-hidden lg:block">
         <img
-          src="/auth-visual.jpg"
+          src="/login-image-2.png"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute left-10 top-10">

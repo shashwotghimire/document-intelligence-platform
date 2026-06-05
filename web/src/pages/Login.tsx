@@ -53,8 +53,8 @@ const Login = () => {
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-2">
       <div className="relative hidden overflow-hidden lg:block">
         <img
-          src="/auth-visual.jpg"
-          alt="Documents arranged on a workspace"
+          src="/login-image-2.png"
+          alt="Computer Networks knowledge base workspace"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute left-10 top-10">
@@ -130,7 +130,7 @@ const Login = () => {
                     to="/register"
                     className="font-medium text-foreground underline-offset-4 hover:underline"
                   >
-                    Make one
+                    Create one here
                   </Link>
                 </p>
               </CardFooter>
