@@ -27,7 +27,7 @@ function useReveal(threshold = 0.15) {
           observer.disconnect();
         }
       },
-      { threshold }
+      { threshold },
     );
 
     observer.observe(el);
@@ -42,20 +42,21 @@ function useReveal(threshold = 0.15) {
 const steps = [
   {
     n: "1",
-    verb: "Add docs",
+    verb: "Add CN docs",
     detail:
-      "Admins upload PDFs, Word docs, text files, and CSVs to one shared library.",
+      "Admins upload networking slides, notes, lab manuals, textbooks, and CSVs to one shared library.",
   },
   {
     n: "2",
     verb: "Ask",
-    detail: "Users ask in plain English. documentGPT checks the saved docs.",
+    detail:
+      "Students ask in plain English. documentGPT checks the Computer Networks material.",
   },
   {
     n: "3",
     verb: "Answer",
     detail:
-      "Read the answer as it comes in. The documents used appear below.",
+      "Read grounded explanations as they stream in. The referenced source documents appear below.",
   },
 ];
 
@@ -63,16 +64,18 @@ const steps = [
 
 const features = [
   {
-    label: "Search by meaning",
+    label: "Search networking concepts by meaning",
     description:
-      "Ask the question your way. The app finds the closest parts of your files.",
+      "Ask about protocols, layers, routing, congestion, or subnetting in your own words. The app finds the closest parts of the course material.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6 font-mono text-sm">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 shrink-0 rounded bg-lime/20 px-1.5 py-0.5 text-xs font-sans text-lime">
             Q
           </span>
-          <span className="text-cream/80">What are the payment terms?</span>
+          <span className="text-cream/80">
+            Why does TCP use a three-way handshake?
+          </span>
         </div>
         <div className="h-px bg-white/8" />
         <div className="flex items-start gap-3">
@@ -80,27 +83,32 @@ const features = [
             A
           </span>
           <span className="text-cream/70 leading-relaxed font-sans">
-            Invoices are due net-30 from delivery. Late payments add 1.5%
-            interest each month.
+            TCP uses SYN, SYN-ACK, and ACK so both hosts can confirm
+            reachability and agree on initial sequence numbers before data
+            transfer.
           </span>
         </div>
         <div className="rounded-lg bg-white/5 px-3 py-2 font-sans text-xs text-cream/50">
-          Referenced document: Q4_Contract_v3.pdf
+          Referenced document: TCP_Transport_Layer.pdf
         </div>
       </div>
     ),
   },
   {
-    label: "Works with common files",
+    label: "Works with common study files",
     description:
-      "Upload PDFs, DOCX files, text notes, and CSV exports from the admin panel.",
+      "Upload lecture PDFs, DOCX notes, text summaries, and CSV lab outputs from the admin panel.",
     demo: (
       <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-ink/60 p-6">
         {[
-          { ext: "PDF", name: "Q4_Contract_v3.pdf", size: "2.4 MB" },
-          { ext: "DOCX", name: "Research_Summary.docx", size: "840 KB" },
-          { ext: "CSV", name: "financials_2024.csv", size: "120 KB" },
-          { ext: "TXT", name: "meeting_notes.txt", size: "18 KB" },
+          { ext: "PDF", name: "OSI_TCPIP_Layers.pdf", size: "2.4 MB" },
+          {
+            ext: "DOCX",
+            name: "Routing_Algorithms_Notes.docx",
+            size: "840 KB",
+          },
+          { ext: "CSV", name: "packet_capture_lab.csv", size: "120 KB" },
+          { ext: "TXT", name: "subnetting_practice.txt", size: "18 KB" },
         ].map((f) => (
           <div
             key={f.name}
@@ -112,22 +120,28 @@ const features = [
             <span className="min-w-0 flex-1 truncate text-sm text-cream/80 font-sans">
               {f.name}
             </span>
-            <span className="shrink-0 text-xs text-cream/30 font-sans">{f.size}</span>
+            <span className="shrink-0 text-xs text-cream/30 font-sans">
+              {f.size}
+            </span>
           </div>
         ))}
       </div>
     ),
   },
   {
-    label: "Admin controls for the library",
+    label: "Grouped networking knowledge base",
     description:
-      "Admins can upload documents, review file status, and remove files that no longer belong.",
+      "Admins can upload selected Computer Networks resources, review processing status, and remove outdated material.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6">
         {[
-          { name: "Board_Minutes.pdf", status: "processed", action: "Delete" },
-          { name: "Vendor_List.csv", status: "processed", action: "Delete" },
-          { name: "Policy_Draft.docx", status: "processing", action: "Wait" },
+          { name: "Network_Layer.pdf", status: "processed", action: "Delete" },
+          { name: "DNS_HTTP_Lab.csv", status: "processed", action: "Delete" },
+          {
+            name: "Wireless_Networks.docx",
+            status: "processing",
+            action: "Wait",
+          },
         ].map((doc) => (
           <div
             key={doc.name}
@@ -144,23 +158,21 @@ const features = [
     ),
   },
   {
-    label: "Saved chats",
+    label: "Saved study sessions",
     description:
-      "Users can create chats, rename them, delete them, and come back to old questions later.",
+      "Students can create topic-based chats, rename them, delete them, and return to previous explanations.",
     demo: (
       <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-ink/60 p-6">
         {[
-          "Contract payment terms",
-          "Research summary notes",
-          "CSV revenue questions",
-          "Policy review",
+          "TCP congestion control",
+          "Subnetting practice",
+          "Distance vector routing",
+          "DNS and HTTP review",
         ].map((chat, index) => (
           <div
             key={chat}
             className={`rounded-lg px-4 py-3 text-sm ${
-              index === 0
-                ? "bg-lime/15 text-lime"
-                : "bg-white/5 text-cream/65"
+              index === 0 ? "bg-lime/15 text-lime" : "bg-white/5 text-cream/65"
             }`}
           >
             {chat}
@@ -170,62 +182,64 @@ const features = [
     ),
   },
   {
-    label: "Streaming answers",
+    label: "Streaming explanations",
     description:
-      "Answers appear as they are written, so users do not wait on a blank screen.",
+      "Explanations appear as they are written, so students can start reading without waiting on a blank screen.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6 text-sm">
         <div className="self-end rounded-2xl bg-lime px-4 py-2 text-ink">
-          What are the payment terms?
+          What is the difference between TCP and UDP?
         </div>
         <div className="rounded-2xl bg-white/5 p-4 leading-relaxed text-cream/70">
-          The agreement says invoices are due net-30 from delivery. Late
-          payments add 1.5% interest each month
+          TCP provides reliable, ordered delivery with connection setup. UDP is
+          connectionless and has lower overhead, but reliability is handled by
+          the application
           <span className="ml-1 inline-block h-4 w-1 translate-y-0.5 bg-lime" />
         </div>
       </div>
     ),
   },
   {
-    label: "Referenced documents",
+    label: "Referenced networking sources",
     description:
-      "After an answer, users can see which uploaded documents were used.",
+      "After an answer, students can see which uploaded notes, slides, or lab documents were used.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6 text-sm">
         <div className="rounded-lg bg-white/5 p-4 leading-relaxed text-cream/70">
-          The contract renews each year unless either side gives written notice
-          before the renewal date.
+          Distance vector routing shares routing tables with neighbors, while
+          link state routing floods link information so each router can compute
+          shortest paths.
         </div>
         <div className="border-t border-white/10 pt-3">
           <div className="mb-2 text-xs font-medium text-cream/45">
             Referenced documents
           </div>
           <div className="space-y-1 text-xs text-cream/55">
-            <p>Q4_Contract_v3.pdf</p>
-            <p>Renewal_Addendum.docx</p>
+            <p>Routing_Protocols.pdf</p>
+            <p>Network_Layer_Notes.docx</p>
           </div>
         </div>
       </div>
     ),
   },
   {
-    label: "Follow-up questions",
+    label: "Smart follow-up questions",
     description:
-      "After an answer, users get suggested next questions they can ask with one click.",
+      "After an answer, students get suggested next questions that stay inside the uploaded Computer Networks material.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6">
         <div className="rounded-lg bg-white/5 p-4 text-sm leading-relaxed text-cream/70">
-          The vendor agreement renews each year unless notice is sent before the
-          renewal date.
+          DNS resolves domain names by querying a hierarchy of servers, starting
+          from root servers and moving toward authoritative name servers.
         </div>
         <div className="text-xs font-medium text-cream/45">
           Follow-up questions
         </div>
         <div className="flex flex-wrap gap-2">
           {[
-            "When is notice due?",
-            "Who can end the agreement?",
-            "What happens after renewal?",
+            "What does a recursive resolver do?",
+            "How is DNS caching used?",
+            "Where do authoritative servers fit?",
           ].map((question) => (
             <span
               key={question}
@@ -233,15 +247,15 @@ const features = [
             >
               {question}
             </span>
-        ))}
+          ))}
         </div>
       </div>
     ),
   },
   {
-    label: "User management",
+    label: "User access control",
     description:
-      "Admins can view registered users and block accounts when access should stop.",
+      "Admins can view registered users and block accounts only.",
     demo: (
       <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-ink/60 p-6">
         {[
@@ -343,27 +357,27 @@ export default function Landing() {
         {/* Heading + CTAs */}
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pb-20 pt-24 text-center md:pb-24 md:pt-32">
           <h1
-            className="font-display text-balance leading-[1.08] tracking-tight transition-all duration-700 ease-out"
+            className="max-w-5xl font-display text-5xl leading-[1.04] tracking-normal text-balance transition-all duration-700 ease-out sm:text-6xl lg:text-7xl"
             style={{
-              fontSize: "clamp(2.6rem, 6.5vw, 5rem)",
-              letterSpacing: "-0.03em",
               opacity: heroIn ? 1 : 0,
               transform: heroIn ? "translateY(0)" : "translateY(24px)",
             }}
           >
-            Ask questions.
-            <br />
-            <span className="text-lime">Get answers</span> from your docs.
+            <span className="block">Ask questions.</span>
+            <span className="block">
+              <span className="text-lime">Get answers</span> from an organized
+            </span>
+            <span className="block">Computer Networks knowledge base.</span>
           </h1>
 
           <p
-            className="mt-6 max-w-[52ch] text-pretty text-lg leading-relaxed text-cream/60 transition-all duration-700 ease-out delay-100"
+            className="mt-7 max-w-[54ch] text-pretty text-base leading-7 text-cream/60 transition-all duration-700 ease-out delay-100 sm:text-lg sm:leading-8"
             style={{
               opacity: heroIn ? 1 : 0,
               transform: heroIn ? "translateY(0)" : "translateY(20px)",
             }}
           >
-            Admins add documents once. Users ask questions anytime. Answers
+            Admins manage knowledge base. Users ask questions anytime. Answers
             come from the indexed files.
           </p>
 
@@ -398,7 +412,8 @@ export default function Landing() {
           style={{
             opacity: heroIn ? 1 : 0,
             transform: heroIn ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 800ms ease-out 300ms, transform 800ms cubic-bezier(0.16,1,0.3,1) 300ms",
+            transition:
+              "opacity 800ms ease-out 300ms, transform 800ms cubic-bezier(0.16,1,0.3,1) 300ms",
           }}
         >
           {/* Dashboard — rotated left, behind */}
@@ -446,10 +461,7 @@ export default function Landing() {
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <section className="border-t border-white/8 py-24">
-        <div
-          ref={howItWorksReveal.ref}
-          className="mx-auto max-w-5xl px-6"
-        >
+        <div ref={howItWorksReveal.ref} className="mx-auto max-w-5xl px-6">
           <h2
             className="font-display text-balance tracking-tight text-cream transition-all duration-600 ease-out"
             style={{
@@ -461,7 +473,7 @@ export default function Landing() {
                 : "translateY(20px)",
             }}
           >
-            Simple enough to use right away.
+            Built for Computer Networks study.
           </h2>
 
           <div className="mt-14 grid gap-0 md:grid-cols-3">
@@ -485,7 +497,9 @@ export default function Landing() {
                     {n}
                   </span>
                 </div>
-                <h3 className="text-xl font-semibold tracking-tight text-cream">{verb}</h3>
+                <h3 className="text-xl font-semibold tracking-tight text-cream">
+                  {verb}
+                </h3>
                 <p className="text-pretty text-sm leading-relaxed text-cream/50 max-w-[30ch]">
                   {detail}
                 </p>
@@ -497,10 +511,7 @@ export default function Landing() {
 
       {/* ── Features ─────────────────────────────────────────────────────── */}
       <section className="border-t border-white/8 py-24">
-        <div
-          ref={featuresReveal.ref}
-          className="mx-auto max-w-5xl px-6"
-        >
+        <div ref={featuresReveal.ref} className="mx-auto max-w-5xl px-6">
           <h2
             className="font-display text-balance tracking-tight transition-all duration-600 ease-out"
             style={{
@@ -512,7 +523,7 @@ export default function Landing() {
                 : "translateY(20px)",
             }}
           >
-            Admin controls the knowledge base.
+            One place for gathered networking answers.
           </h2>
 
           <div className="mt-16 flex flex-col gap-20">
@@ -553,7 +564,7 @@ export default function Landing() {
       {/* ── CTA close ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-t border-white/8">
         <img
-          src="/hero-docs.jpg"
+          src="/hero-network.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover"
@@ -570,10 +581,12 @@ export default function Landing() {
               fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)",
               letterSpacing: "-0.025em",
               opacity: ctaReveal.visible ? 1 : 0,
-              transform: ctaReveal.visible ? "translateY(0)" : "translateY(20px)",
+              transform: ctaReveal.visible
+                ? "translateY(0)"
+                : "translateY(20px)",
             }}
           >
-            Stop searching by hand. Ask the docs.
+            Stop searching through slides. Ask the network notes.
           </h2>
         </div>
       </section>
@@ -585,7 +598,7 @@ export default function Landing() {
 
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-cream/50">
             <span className="text-cream/25">
-              © {new Date().getFullYear()} documentGPT
+              © {new Date().getFullYear()} networkGPT
             </span>
           </nav>
         </div>
