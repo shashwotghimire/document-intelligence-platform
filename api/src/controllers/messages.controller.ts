@@ -14,18 +14,11 @@ import {
   generateTitlePrompt,
   systemPrompt,
 } from "../utils/prompt";
-import { parseFollowUpQuestions } from "../utils/parseResponse";
+import {
+  parseFollowUpQuestions,
+  normalizeGeneratedTitle,
+} from "../utils/parseResponse";
 import { logEvent } from "../services/logger.service";
-
-const normalizeGeneratedTitle = (title?: string) => {
-  return title
-    ?.trim()
-    .replace(/^["'`]+|["'`]+$/g, "")
-    .replace(/\s+/g, " ")
-    .split(" ")
-    .slice(0, 6)
-    .join(" ");
-};
 
 export const sendMessage = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {

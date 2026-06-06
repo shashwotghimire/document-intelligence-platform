@@ -20,3 +20,13 @@ export const parseFollowUpQuestions = (raw: string | undefined): string[] => {
     return [];
   }
 };
+
+export const normalizeGeneratedTitle = (title?: string) => {
+  return title
+    ?.trim()
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .slice(0, 6)
+    .join(" ");
+};

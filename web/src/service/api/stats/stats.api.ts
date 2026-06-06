@@ -1,5 +1,8 @@
 import axiosInstace from "@/service/axios/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+
+const PROCESSING_REFETCH_INTERVAL_MS = 10000;
 
 interface GetStatsResponse {
   success: boolean;
@@ -15,7 +18,7 @@ interface GetStatsResponse {
 interface StatsTableDocument {
   id: string;
   filename: string;
-  fileType: "pdf" | "docx" | "txt";
+  fileType: "pdf" | "docx" | "txt" | "csv";
   filePath: string;
   fileUrl: string;
   fileSize: number;
@@ -47,7 +50,10 @@ export const useGetStats = () => {
 };
 
 export const useGetStatsForTable = () => {
-  return useQuery<GetStatsForTableResponse, Error>({
+  const queryClient = useQueryClient();
+  const wasProcessingRef = useRef(false);
+
+  const query = useQuery<GetStatsForTableResponse, Error>({
     queryKey: ["stats", "table"],
     queryFn: async () => {
       const res = (
@@ -56,5 +62,30 @@ export const useGetStatsForTable = () => {
 
       return res;
     },
+    refetchInterval: (query) => {
+      const hasProcessing = query.state.data?.data.some(
+        (document) => document.fileProcessingStatus === "Processing",
+      );
+
+      return hasProcessing ? PROCESSING_REFETCH_INTERVAL_MS : false;
+    },
   });
+
+  const hasProcessing =
+    query.data?.data.some(
+      (document) => document.fileProcessingStatus === "Processing",
+    ) ?? false;
+
+  useEffect(() => {
+    if (!query.isSuccess) return;
+
+    if (wasProcessingRef.current && !hasProcessing) {
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
+    }
+
+    wasProcessingRef.current = hasProcessing;
+  }, [hasProcessing, query.isSuccess, queryClient]);
+
+  return query;
 };
