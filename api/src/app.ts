@@ -15,15 +15,16 @@ import { swaggerSpec } from "./config/swagger";
 import { allowedFrontendOrigins } from "./config/frontend";
 
 const app: express.Application = express();
-app.use(helmet());
-app.use(limiter);
-app.use(express.json());
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin: allowedFrontendOrigins,
     credentials: true,
   }),
 );
+app.use(helmet());
+app.use(limiter);
+app.use(express.json());
 
 app.get("/api-docs.json", (_req, res) => {
   res.setHeader("Content-Type", "application/json");
