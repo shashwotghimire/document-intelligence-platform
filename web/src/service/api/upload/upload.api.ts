@@ -5,7 +5,7 @@ import axiosInstance from "@/service/axios/axios";
 export interface UploadedDocument {
   id: string;
   filename: string;
-  fileType: "pdf" | "docx" | "txt";
+  fileType: "pdf" | "docx" | "txt" | "csv";
   filePath: string;
   fileSize: number;
   uploadedBy: string;
@@ -47,17 +47,13 @@ export const useUploadDocument = () => {
       const response = await axiosInstance.post<DocumentUploadResponse>(
         "/uploads",
         formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
       );
 
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["stats", "table"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
   });

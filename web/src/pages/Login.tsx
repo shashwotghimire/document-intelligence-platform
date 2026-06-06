@@ -53,8 +53,8 @@ const Login = () => {
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-2">
       <div className="relative hidden overflow-hidden lg:block">
         <img
-          src="/auth-visual.jpg"
-          alt="Documents arranged on a workspace"
+          src="/auth-topology.jpg"
+          alt="Network topology visualization for secure document intelligence"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute left-10 top-10">

@@ -1,29 +1,20 @@
 import { Response } from "express";
-import path from "path";
 import type { AuthRequest } from "../middlewares/auth.middleware";
-import { Document, DocumentFileType } from "../models/document.model";
+import { Document } from "../models/document.model";
 import { ApiError } from "../utils/ApiError";
 import asyncHandler from "../utils/asyncHandler";
-import { extractText } from "../services/parse-documents.service";
-import { chunkDocument } from "../services/chunk.service";
 import { DocumentChunk } from "../models/documentChunk.model";
-import { generateEmbedding } from "../services/embeddings.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
-import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../services/s3.service";
+import {
+  deleteFromS3,
+  getS3PresignedUrl,
+  uploadToS3,
+} from "../services/s3.service";
 import sequelize from "../db";
 import { logEvent } from "../services/logger.service";
-
-const getDocumentFileType = (filename: string): DocumentFileType => {
-  const extension = path.extname(filename).toLowerCase();
-
-  if (extension === ".pdf") return "pdf";
-  if (extension === ".docx") return "docx";
-  if (extension === ".txt") return "txt";
-  if (extension === ".csv") return "csv";
-
-  throw new ApiError(400, "Bad Request", "Unsupported file type");
-};
+import { getDocumentFileType } from "../utils/filetype";
+import { processDocumentInBackground } from "../services/processDocument.service";
 
 export const uploadFile = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -36,56 +27,30 @@ export const uploadFile = asyncHandler<AuthRequest>(
     try {
       const uploadedFile = await uploadToS3(req.file);
       uploadedFileKey = uploadedFile.key;
-      const rawText = await extractText(
-        req.file!.buffer,
-        getDocumentFileType(originalname),
-      );
-      const chunks = await chunkDocument(rawText);
-      const chunksWithEmbeddings = await Promise.all(
-        chunks.map(async (chunk, index) => {
-          const embedding = await generateEmbedding(chunk);
 
-          return {
-            chunkText: chunk,
-            chunkIndex: index,
-            vectorEmbedding: embedding,
-          };
-        }),
-      );
-      const file = await sequelize.transaction(async (t) => {
-        const file = await Document.create(
-          {
-            filename: originalname,
-            fileType: getDocumentFileType(originalname),
-            filePath: uploadedFile.key,
-            fileSize: size,
-            uploadedBy: req.user.id,
-            fileProcessingStatus: "Processing",
-          },
-          { transaction: t },
-        );
-
-        await DocumentChunk.bulkCreate(
-          chunksWithEmbeddings.map((chunk) => ({
-            ...chunk,
-            documentId: file.id,
-          })),
-          {
-            transaction: t,
-          },
-        );
-        file.fileProcessingStatus = "Processed";
-        await file.save({ transaction: t });
-        return file;
+      const file = await Document.create({
+        filename: originalname,
+        fileType: getDocumentFileType(originalname),
+        filePath: uploadedFile.key,
+        fileSize: size,
+        uploadedBy: req.user.id,
+        fileProcessingStatus: "Processing",
       });
 
-      await logEvent(req.user.id, "file_uploaded", `Uploaded ${originalname}`);
-      return res.status(200).json(
-        new ApiResponse(true, "file uploaded successfully", {
-          file,
-          // chunks,
-          // chunksWithEmbeddings,
-        }),
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            true,
+            "File uploaded started processing in background",
+            { file },
+          ),
+        );
+      processDocumentInBackground(
+        file,
+        req.file.buffer,
+        req.user.id,
+        originalname,
       );
     } catch (error) {
       if (uploadedFileKey) {
@@ -136,7 +101,9 @@ export const getStatsForTable = asyncHandler(
     );
     return res
       .status(200)
-      .json(new ApiResponse(true, "Stats fetched successfully", documentsWithUrl));
+      .json(
+        new ApiResponse(true, "Stats fetched successfully", documentsWithUrl),
+      );
   },
 );
 
