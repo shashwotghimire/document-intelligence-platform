@@ -35,7 +35,16 @@ interface StatsTableDocument {
 interface GetStatsForTableResponse {
   success: boolean;
   message: string;
-  data: StatsTableDocument[];
+  data: {
+    documents: StatsTableDocument[];
+    pagination: {
+      page: number;
+      limit: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    hasProcessing: boolean;
+  };
 }
 export const useGetStats = () => {
   return useQuery<GetStatsResponse, Error>({
@@ -49,32 +58,32 @@ export const useGetStats = () => {
   });
 };
 
-export const useGetStatsForTable = () => {
+export const useGetStatsForTable = (page = 1, limit = 10) => {
   const queryClient = useQueryClient();
   const wasProcessingRef = useRef(false);
 
   const query = useQuery<GetStatsForTableResponse, Error>({
-    queryKey: ["stats", "table"],
+    queryKey: ["stats", "table", page, limit],
     queryFn: async () => {
       const res = (
-        await axiosInstace.get<GetStatsForTableResponse>(`/uploads/tableStats`)
+        await axiosInstace.get<GetStatsForTableResponse>(
+          `/uploads/tableStats`,
+          {
+            params: { page, limit },
+          },
+        )
       ).data;
 
       return res;
     },
     refetchInterval: (query) => {
-      const hasProcessing = query.state.data?.data.some(
-        (document) => document.fileProcessingStatus === "Processing",
-      );
+      const hasProcessing = query.state.data?.data.hasProcessing;
 
       return hasProcessing ? PROCESSING_REFETCH_INTERVAL_MS : false;
     },
   });
 
-  const hasProcessing =
-    query.data?.data.some(
-      (document) => document.fileProcessingStatus === "Processing",
-    ) ?? false;
+  const hasProcessing = query.data?.data.hasProcessing ?? false;
 
   useEffect(() => {
     if (!query.isSuccess) return;

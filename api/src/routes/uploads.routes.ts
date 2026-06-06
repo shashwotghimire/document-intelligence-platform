@@ -11,6 +11,7 @@ import { rolesGuard } from "../middlewares/roles.middleware";
 import { validate } from "../middlewares/validation.middleware";
 import {
   deleteDocumentSchema,
+  getDocumentsTableSchema,
   uploadDocumentSchema,
 } from "../validation/document.validation";
 
@@ -143,6 +144,7 @@ router.get(
   "/tableStats",
   authMiddleware,
   rolesGuard("admin"),
+  validate(getDocumentsTableSchema),
   getStatsForTable,
 );
 

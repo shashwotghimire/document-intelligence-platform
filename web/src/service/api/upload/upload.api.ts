@@ -72,6 +72,7 @@ export const useDeleteDocument = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["stats", "table"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "logs"] });
     },
   });

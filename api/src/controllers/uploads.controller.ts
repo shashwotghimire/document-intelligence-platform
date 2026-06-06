@@ -15,6 +15,7 @@ import sequelize from "../db";
 import { logEvent } from "../services/logger.service";
 import { getDocumentFileType } from "../utils/filetype";
 import { processDocumentInBackground } from "../services/processDocument.service";
+import type { GetDocumentsTableInput } from "../validation/document.validation";
 
 export const uploadFile = asyncHandler<AuthRequest>(
   async (req: AuthRequest, res: Response) => {
@@ -83,27 +84,50 @@ export const getFileStats = asyncHandler<AuthRequest>(
 
 export const getStatsForTable = asyncHandler(
   async (req: AuthRequest, res: Response) => {
-    const documents = await Document.findAll({
-      where: {
-        uploadedBy: req.user.id,
-      },
-      include: {
-        model: User,
-        as: "uploader",
-        attributes: ["name", "role"],
-      },
-    });
+    const page = parseInt((req.query as GetDocumentsTableInput).page ?? "1");
+    const limit = parseInt((req.query as GetDocumentsTableInput).limit ?? "10");
+    const offset = (page - 1) * limit;
+
+    const [{ count, rows }, processingDocuments] = await Promise.all([
+      Document.findAndCountAll({
+        where: {
+          uploadedBy: req.user.id,
+        },
+        include: {
+          model: User,
+          as: "uploader",
+          attributes: ["name", "role"],
+        },
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset,
+      }),
+      Document.count({
+        where: {
+          uploadedBy: req.user.id,
+          fileProcessingStatus: "Processing",
+        },
+      }),
+    ]);
+
     const documentsWithUrl = await Promise.all(
-      documents.map(async (doc) => ({
+      rows.map(async (doc) => ({
         ...doc.toJSON(),
         fileUrl: await getS3PresignedUrl(doc.filePath),
       })),
     );
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(true, "Stats fetched successfully", documentsWithUrl),
-      );
+    return res.status(200).json(
+      new ApiResponse(true, "Stats fetched successfully", {
+        documents: documentsWithUrl,
+        pagination: {
+          page,
+          limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+        },
+        hasProcessing: processingDocuments > 0,
+      }),
+    );
   },
 );
 

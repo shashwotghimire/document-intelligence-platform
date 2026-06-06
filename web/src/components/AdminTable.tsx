@@ -17,14 +17,17 @@ import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import Loading from "./Loading";
 
 export function AdminTable() {
+  const [page, setPage] = useState(1);
+  const limit = 10;
   const [documentToDelete, setDocumentToDelete] = useState<{
     id: string;
     filename: string;
   } | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const { data, isPending } = useGetStatsForTable();
+  const { data, isPending } = useGetStatsForTable(page, limit);
   const deleteDocument = useDeleteDocument();
-  const documents = data?.data ?? [];
+  const documents = data?.data.documents ?? [];
+  const pagination = data?.data.pagination;
 
   const handleConfirmDeleteDocument = async () => {
     if (!documentToDelete) return;
@@ -34,6 +37,9 @@ export function AdminTable() {
     try {
       await deleteDocument.mutateAsync({ documentId: documentToDelete.id });
       setDocumentToDelete(null);
+      if (documents.length === 1 && page > 1) {
+        setPage((currentPage) => currentPage - 1);
+      }
     } catch {
       setDeleteError("Unable to delete file. Please try again.");
     }
@@ -130,6 +136,30 @@ export function AdminTable() {
           )}
         </TableBody>
       </Table>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2 px-2 py-3">
+          <span className="text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page === pagination.totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
       <DeleteConfirmationDialog
         open={Boolean(documentToDelete)}
         onOpenChange={(open) => {
