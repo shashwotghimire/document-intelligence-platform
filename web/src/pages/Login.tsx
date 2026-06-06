@@ -130,7 +130,7 @@ const Login = () => {
                     to="/register"
                     className="font-medium text-foreground underline-offset-4 hover:underline"
                   >
-                    Make one
+                    Create one here
                   </Link>
                 </p>
               </CardFooter>
