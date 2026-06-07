@@ -50,7 +50,7 @@ const steps = [
     n: "2",
     verb: "Ask",
     detail:
-      "Students ask in plain English. documentGPT checks the Computer Networks material.",
+      "Students ask in plain English. networkGPT checks the Computer Networks material.",
   },
   {
     n: "3",
@@ -64,9 +64,9 @@ const steps = [
 
 const features = [
   {
-    label: "Search networking concepts by meaning",
+    label: "Search concepts by meaning",
     description:
-      "Ask about protocols, layers, routing, congestion, or subnetting in your own words. The app finds the closest parts of the course material.",
+      "Ask about protocols, layers, routing, congestion, or subnetting in your own words. The app answers based on course materials.",
     demo: (
       <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-ink/60 p-6 font-mono text-sm">
         <div className="flex items-start gap-3">
@@ -129,7 +129,7 @@ const features = [
     ),
   },
   {
-    label: "Grouped networking knowledge base",
+    label: "Curated networking knowledge base",
     description:
       "Admins can upload selected Computer Networks resources, review processing status, and remove outdated material.",
     demo: (
@@ -200,7 +200,7 @@ const features = [
     ),
   },
   {
-    label: "Referenced networking sources",
+    label: "Referenced sources",
     description:
       "After an answer, students can see which uploaded notes, slides, or lab documents were used.",
     demo: (
@@ -363,11 +363,11 @@ export default function Landing() {
               transform: heroIn ? "translateY(0)" : "translateY(24px)",
             }}
           >
-            <span className="block">Ask questions.</span>
+            <span className="block">One place to solve your</span>
             <span className="block">
-              <span className="text-lime">Get answers</span> from an organized
+              <span className="text-lime">computer network</span> queries.
             </span>
-            <span className="block">Computer Networks knowledge base.</span>
+            <span className="block">Ask networkGPT.</span>
           </h1>
 
           <p
@@ -408,7 +408,7 @@ export default function Landing() {
 
         {/* Floating screenshot cards */}
         <div
-          className="relative mx-auto h-[500px] max-w-6xl px-4 md:h-[660px]"
+          className="relative mx-auto h-[580px] max-w-7xl px-4 md:h-[800px]"
           style={{
             opacity: heroIn ? 1 : 0,
             transform: heroIn ? "translateY(0)" : "translateY(32px)",
@@ -418,12 +418,12 @@ export default function Landing() {
         >
           {/* Dashboard — rotated left, behind */}
           <div
-            className="absolute left-[2%] top-[4%] w-[68%] overflow-hidden rounded-2xl border border-white/10 shadow-[0_32px_80px_oklch(0_0_0/0.6)] md:left-[3%] md:w-[64%]"
+            className="absolute left-[2%] top-[4%] w-[76%] overflow-hidden rounded-2xl border border-white/10 shadow-[0_32px_80px_oklch(0_0_0/0.6)] md:left-[2%] md:w-[62%]"
             style={{ transform: "rotate(-4.5deg)", zIndex: 1 }}
           >
             <img
-              src="/dashbaord.png"
-              alt="documentGPT admin dashboard"
+              src="/admin-db.png"
+              alt="networkGPT admin dashboard"
               className="w-full object-cover object-top"
               loading="eager"
             />
@@ -431,12 +431,25 @@ export default function Landing() {
 
           {/* Chat — rotated right, in front */}
           <div
-            className="absolute right-[2%] top-[10%] w-[68%] overflow-hidden rounded-2xl border border-white/10 shadow-[0_40px_100px_oklch(0_0_0/0.7)] md:right-[3%] md:w-[64%]"
+            className="absolute right-[1%] top-[12%] w-[78%] overflow-hidden rounded-2xl border border-white/10 shadow-[0_40px_100px_oklch(0_0_0/0.7)] md:right-[1%] md:w-[62%]"
             style={{ transform: "rotate(4deg)", zIndex: 2 }}
           >
             <img
-              src="/chats.png"
-              alt="documentGPT chat interface"
+              src="/chat1.png"
+              alt="networkGPT chat interface"
+              className="w-full object-cover object-top"
+              loading="eager"
+            />
+          </div>
+
+          {/* Follow-up chat — lower support card */}
+          <div
+            className="absolute bottom-[4%] left-1/2 w-[78%] overflow-hidden rounded-2xl border border-white/10 shadow-[0_36px_90px_oklch(0_0_0/0.68)] md:bottom-[3%] md:w-[58%]"
+            style={{ transform: "translateX(-50%) rotate(-1.5deg)", zIndex: 3 }}
+          >
+            <img
+              src="/chat2.png"
+              alt="networkGPT referenced answer interface"
               className="w-full object-cover object-top"
               loading="eager"
             />
@@ -523,7 +536,7 @@ export default function Landing() {
                 : "translateY(20px)",
             }}
           >
-            One place for gathered networking answers.
+            One place for your computer network queries.
           </h2>
 
           <div className="mt-16 flex flex-col gap-20">
@@ -586,7 +599,8 @@ export default function Landing() {
                 : "translateY(20px)",
             }}
           >
-            Stop searching through slides. Ask the network notes.
+            <span className="block">Stop searching through notes.</span>
+            <span className="block">Ask networkGPT.</span>
           </h2>
         </div>
       </section>
@@ -597,6 +611,22 @@ export default function Landing() {
           <LogoDark textClassName="text-cream" />
 
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-cream/50">
+            <a
+              href="https://github.com/shashwotghimire/document-intelligence-platform"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://shashwotghimire.tech/api-docs"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+            >
+              API Docs
+            </a>
             <span className="text-cream/25">
               © {new Date().getFullYear()} networkGPT
             </span>

@@ -1,6 +1,6 @@
 # Document Intelligence Platform
 
-`documentGPT` is a full-stack, web-based AI document chat platform. It lets users register, verify email, sign in, and ask questions against a shared document knowledge base using Retrieval-Augmented Generation (RAG). Admin users manage the knowledge base and user access.
+`networkGPT` is a full-stack, web-based AI chat platform for computer networks material. It lets users register, verify email, sign in, and ask questions against a shared knowledge base using Retrieval-Augmented Generation (RAG). Admin users manage the knowledge base and user access.
 
 The project is implemented as two TypeScript applications:
 
@@ -43,11 +43,15 @@ The project is implemented as two TypeScript applications:
 
 ### Admin Dashboard
 
-![Admin dashboard showing uploaded document stats and activity logs](web/public/dashbaord.png)
+![Admin dashboard showing uploaded document stats and activity logs](web/public/admin-db.png)
 
-### Document Chat
+### Network Chat
 
-![Chat interface showing a document-grounded conversation](web/public/chats.png)
+![Chat interface showing a network-grounded conversation](web/public/chat1.png)
+
+### Referenced Network Answer
+
+![Chat interface showing a referenced network answer](web/public/chat2.png)
 
 ## Technology Stack
 
@@ -375,7 +379,7 @@ Fill in:
 ```env
 PORT=8080
 PGHOST=localhost
-PGDATABASE=documentgpt
+PGDATABASE=networkgpt
 PGUSER=postgres
 PGPASSWORD=your_database_password
 PGSSLMODE=disable
@@ -528,7 +532,7 @@ Example web image build:
 
 ```bash
 cd web
-docker build --build-arg VITE_API_BASE_URL=https://your-api.example.com/api -t documentgpt-web .
+docker build --build-arg VITE_API_BASE_URL=https://your-api.example.com/api -t networkgpt-web .
 ```
 
 The root `docker-compose.yml` currently defines the API service only:
